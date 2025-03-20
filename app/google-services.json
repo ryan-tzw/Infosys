@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "659870632847",
+    "project_id": "blink-8ee46",
+    "storage_bucket": "blink-8ee46.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659870632847:android:c4a70490d69e029a6519fa",
+        "android_client_info": {
+          "package_name": "com.example.infosys"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCU3ERnPAYR0H7UeFeVH6RgYwEH7vO2Ndw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659870632847:android:cbee8c2facbca4b16519fa",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCU3ERnPAYR0H7UeFeVH6RgYwEH7vO2Ndw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

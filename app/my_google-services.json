@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "722259363924",
+    "project_id": "infosys-70ac4",
+    "storage_bucket": "infosys-70ac4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722259363924:android:d38d55ed672820ee5ac5c1",
+        "android_client_info": {
+          "package_name": "com.example.infosys"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5OwYMq7iLM84U5lkDiHrAwt3RZrYHMcI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

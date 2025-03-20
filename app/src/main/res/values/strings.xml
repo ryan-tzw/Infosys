@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Infosys</string>
+    <string name="blink">Blink</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="communities">Communities</string>
+    <string name="home">Home</string>
+    <string name="notifications">Notifications</string>
+    <string name="messages">Messages</string>
+    <string name="search">Search</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="register">Register</string>
+    <string name="signup_prompt">Don\'t have an account? Sign up</string>
+    <string name="login_prompt">Already have an account?</string>
+    <string name="confirm_password">Confirm Password</string>
+</resources>
