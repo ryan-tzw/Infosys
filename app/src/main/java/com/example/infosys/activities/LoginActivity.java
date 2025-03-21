@@ -1,4 +1,4 @@
-package com.example.infosys;
+package com.example.infosys.activities;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -11,7 +11,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.infosys.interfaces.AutoLoginNavCallback;
+import com.example.infosys.R;
 import com.example.infosys.interfaces.LoginNavCallback;
 import com.example.infosys.managers.FirebaseManager;
 import com.example.infosys.managers.LoginManager;
@@ -20,7 +20,7 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Map;
 
-public class LoginActivity extends AppCompatActivity implements LoginNavCallback, AutoLoginNavCallback {
+public class LoginActivity extends AppCompatActivity implements LoginNavCallback {
     private EditText edtEmail, edtPassword;
     private TextInputLayout tilEmail, tilPassword;
     private FirebaseManager firebaseManager;
@@ -45,6 +45,7 @@ public class LoginActivity extends AppCompatActivity implements LoginNavCallback
     protected void onStart() {
         super.onStart();
         firebaseManager.autoLogin(this);
+        // TODO: Handle the delay between auto-login and the UI update
     }
 
     private void login() {
@@ -56,10 +57,6 @@ public class LoginActivity extends AppCompatActivity implements LoginNavCallback
         displayErrors(errors);
 
         firebaseManager.loginUser(email, password, this, this);
-    }
-
-    private void navigateToRegister() {
-        AndroidUtil.navigateTo(LoginActivity.this, RegisterActivity.class);
     }
 
     private void displayErrors(Map<String, String> errors) {
@@ -81,21 +78,18 @@ public class LoginActivity extends AppCompatActivity implements LoginNavCallback
         signUpTextView.setOnClickListener(v -> navigateToRegister());
     }
 
+    private void navigateToRegister() {
+        AndroidUtil.navigateTo(LoginActivity.this, RegisterActivity.class);
+    }
+
     @Override
     public void onLoginSuccess() {
         AndroidUtil.showToast(getApplicationContext(), "Login successful!");
-        AndroidUtil.navigateTo(LoginActivity.this, HomeActivity.class);
-
+        AndroidUtil.navigateTo(LoginActivity.this, MainActivity.class);
     }
 
     @Override
     public void onLoginFailure(Exception e) {
         AndroidUtil.showToast(getApplicationContext(), "Error: " + e.getMessage());
-    }
-
-    @Override
-    public void onAutoLoginSuccess() {
-        AndroidUtil.showToast(getApplicationContext(), "Auto-login successful!");
-        AndroidUtil.navigateTo(LoginActivity.this, HomeActivity.class);
     }
 }

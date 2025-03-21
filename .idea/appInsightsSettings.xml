@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.infosys" />
-                  <option name="mobileSdkAppId" value="1:659870632847:android:c4a70490d69e029a6519fa" />
-                  <option name="projectId" value="blink-8ee46" />
-                  <option name="projectNumber" value="659870632847" />
+                  <option name="mobileSdkAppId" value="1:722259363924:android:d38d55ed672820ee5ac5c1" />
+                  <option name="projectId" value="infosys-70ac4" />
+                  <option name="projectNumber" value="722259363924" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

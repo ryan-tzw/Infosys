@@ -1,4 +1,4 @@
-package com.example.infosys;
+package com.example.infosys.activities;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -11,6 +11,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.infosys.R;
 import com.example.infosys.interfaces.RegistrationNavCallback;
 import com.example.infosys.managers.FirebaseManager;
 import com.example.infosys.managers.RegistrationManager;
@@ -87,12 +88,12 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
     // Methods to handle Firestore success and failure
     @Override
     public void onRegistrationSuccess() {
-        AndroidUtil.showToast(getApplicationContext(), "Sign-up successful!");
+        AndroidUtil.showToast(getApplicationContext(), "Sign-up success! Please check your email for verification.");
         AndroidUtil.navigateTo(RegisterActivity.this, LoginActivity.class);
     }
 
     @Override
     public void onRegistrationFailure(Exception e) {
-        AndroidUtil.showToast(getApplicationContext(), "Error: " + e.getMessage());
+        AndroidUtil.errorToast(getApplicationContext(), "Error: " + e.getMessage());
     }
 }

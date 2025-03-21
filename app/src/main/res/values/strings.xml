@@ -18,4 +18,9 @@
     <string name="signup_prompt">Don\'t have an account? Sign up</string>
     <string name="login_prompt">Already have an account?</string>
     <string name="confirm_password">Confirm Password</string>
+    <string name="logout">Logout</string>
+    <string name="friends">Friends</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="friend_name">Friend Name</string>
+    <string name="last_message">Last message</string>
 </resources>
