@@ -4,8 +4,9 @@ import android.content.Context;
 
 import com.example.infosys.interfaces.RegistrationNavCallback;
 import com.example.infosys.model.User;
-import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Objects;
@@ -38,26 +39,18 @@ public class FirebaseFirestoreManager {
 
         firestore.collection("users").document(uid)
                 .set(newUser)
-                .addOnSuccessListener(aVoid -> callback.onSuccess())
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(aVoid -> callback.onRegistrationSuccess())
+                .addOnFailureListener(callback::onRegistrationFailure);
     }
 
-    public void fetchUserData() {
+    public Task<DocumentSnapshot> getCurrentUserData() {
         String uid = FirebaseUtil.getCurrentUserUid(appContext);
 
-        firestore.collection("users").document(Objects.requireNonNull(uid))
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String username = documentSnapshot.getString("username");
-                        AndroidUtil.showToast(appContext, "Welcome, " + username);
+        return firestore.collection("users").document(Objects.requireNonNull(uid)).get();
+    }
 
-                        firestore.collection("users").document(uid).update("signedIn", true);
-                        // TODO : navigateToHome();
-                    } else {
-                        AndroidUtil.errorToast(appContext, "User data not found");
-                    }
-                })
-                .addOnFailureListener(e -> AndroidUtil.errorToast(appContext, "Error fetching user data: " + e.getMessage()));
+    public void updateSignedInStatus(boolean signedIn) {
+        String uid = FirebaseUtil.getCurrentUserUid(appContext);
+        firestore.collection("users").document(Objects.requireNonNull(uid)).update("signedIn", signedIn);
     }
 }

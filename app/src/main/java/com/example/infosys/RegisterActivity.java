@@ -13,7 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.infosys.interfaces.RegistrationNavCallback;
 import com.example.infosys.managers.FirebaseManager;
-import com.example.infosys.managers.RegisterManager;
+import com.example.infosys.managers.RegistrationManager;
 import com.example.infosys.utils.AndroidUtil;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -46,7 +46,7 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
         String password = edtPassword.getText().toString();
         String confirmPassword = edtConfirmPassword.getText().toString();
 
-        Map<String, String> errors = RegisterManager.validateRegistration(email, username, password, confirmPassword);
+        Map<String, String> errors = RegistrationManager.validateRegistration(email, username, password, confirmPassword);
 
         displayErrors(errors);
 
@@ -86,13 +86,13 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
 
     // Methods to handle Firestore success and failure
     @Override
-    public void onSuccess() {
+    public void onRegistrationSuccess() {
         AndroidUtil.showToast(getApplicationContext(), "Sign-up successful!");
         AndroidUtil.navigateTo(RegisterActivity.this, LoginActivity.class);
     }
 
     @Override
-    public void onFailure(Exception e) {
+    public void onRegistrationFailure(Exception e) {
         AndroidUtil.showToast(getApplicationContext(), "Error: " + e.getMessage());
     }
 }

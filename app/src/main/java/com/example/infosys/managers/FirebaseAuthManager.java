@@ -60,4 +60,8 @@ public class FirebaseAuthManager {
                 });
     }
 
+    public void logoutUser() {
+        mAuth.signOut();
+    }
+
 }

@@ -1,7 +1,7 @@
 package com.example.infosys.interfaces;
 
 public interface RegistrationNavCallback {
-    void onSuccess();
+    void onRegistrationSuccess();
 
-    void onFailure(Exception e);
+    void onRegistrationFailure(Exception e);
 }

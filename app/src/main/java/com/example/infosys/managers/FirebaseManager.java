@@ -3,6 +3,8 @@ package com.example.infosys.managers;
 import android.app.Activity;
 import android.content.Context;
 
+import com.example.infosys.interfaces.AutoLoginNavCallback;
+import com.example.infosys.interfaces.LoginNavCallback;
 import com.example.infosys.interfaces.RegistrationNavCallback;
 import com.example.infosys.utils.AndroidUtil;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
@@ -11,8 +13,8 @@ import com.google.firebase.auth.FirebaseUser;
 public class FirebaseManager {
     private static FirebaseManager instance;
     private final Context appContext;
-    private FirebaseAuthManager authManager;
-    private FirebaseFirestoreManager firestoreManager;
+    private final FirebaseAuthManager authManager;
+    private final FirebaseFirestoreManager firestoreManager;
 
     private FirebaseManager(Context context) {
         this.appContext = context.getApplicationContext();
@@ -45,20 +47,30 @@ public class FirebaseManager {
         ;
     }
 
-    public void loginUser(String email, String password, Activity activity) {
+    public void loginUser(String email, String password, Activity activity, LoginNavCallback callback) {
         authManager.loginUser(email, password)
                 .addOnSuccessListener(authResult -> {
                     FirebaseUser user = authManager.getCurrentUser();
-
-                    if (user != null) {
-                        if (user.isEmailVerified()) {
-                            firestoreManager.fetchUserData();
-                        } else {
-                            AndroidUtil.showToast(appContext, "Please verify your email address");
-                        }
-                    } else {
-                        AndroidUtil.errorToast(appContext, "User is null after successful login.");
+                    if (user == null) {
+                        AndroidUtil.errorToast(appContext, "User is null.");
+                        return;
                     }
+                    if (!user.isEmailVerified()) {
+                        AndroidUtil.showToast(appContext, "Please verify your email address");
+                        return;
+                    }
+                    firestoreManager.getCurrentUserData()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    String username = documentSnapshot.getString("username");
+                                    AndroidUtil.showToast(appContext, "Welcome, " + username);
+                                    firestoreManager.updateSignedInStatus(true);
+                                    callback.onLoginSuccess();
+                                } else {
+                                    AndroidUtil.errorToast(appContext, "User data not found");
+                                }
+                            })
+                            .addOnFailureListener(callback::onLoginFailure);
                 })
                 .addOnFailureListener(e -> {
                     if (e instanceof FirebaseAuthInvalidCredentialsException) {
@@ -67,9 +79,31 @@ public class FirebaseManager {
                         AndroidUtil.errorToast(appContext, "Login failed: " + e.getMessage());
                     }
                 });
-
-
     }
 
+    public void autoLogin(AutoLoginNavCallback callback) {
+        FirebaseUser user = authManager.getCurrentUser();
+        if (user == null) {
+            AndroidUtil.errorToast(appContext, "User is null.");
+            return;
+        }
+        firestoreManager.getCurrentUserData()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) {
+                        return;
+                    }
+                    Boolean signedIn = documentSnapshot.getBoolean("signedIn");
+                    if (signedIn != null && signedIn) {
+                        callback.onAutoLoginSuccess();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    AndroidUtil.errorToast(appContext, "Failed to check login status: " + e.getMessage());
+                });
+    }
+
+    public void logoutUser() {
+        authManager.logoutUser();
+    }
 
 }

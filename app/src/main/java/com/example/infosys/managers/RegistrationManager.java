@@ -6,7 +6,7 @@ import android.util.Patterns;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RegisterManager {
+public class RegistrationManager {
 
     public static Map<String, String> validateRegistration(String email, String username, String password, String confirmPassword) {
         Map<String, String> errors = new HashMap<>();
