@@ -23,4 +23,7 @@
     <string name="profile_picture">Profile Picture</string>
     <string name="friend_name">Friend Name</string>
     <string name="last_message">Last message</string>
+    <string name="message">Message</string>
+    <string name="send_button">Send Button</string>
+    <string name="placeholder_text">Placeholder text</string>
 </resources>

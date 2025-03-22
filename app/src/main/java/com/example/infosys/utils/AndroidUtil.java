@@ -24,13 +24,6 @@ public class AndroidUtil {
         Toast.makeText(context, message, duration).show();
     }
 
-    public static void handleError(Context context, Exception e, String userMessage) {
-        if (e != null) {
-            Log.e("FirebaseManager", userMessage + ": " + e.getMessage());
-            showToast(context, userMessage, Toast.LENGTH_LONG);
-        }
-    }
-
     public static void errorToast(Context context, String message) {
         showToast(context, message, Toast.LENGTH_LONG);
         Log.e("Error", message);
@@ -39,7 +32,6 @@ public class AndroidUtil {
     public static void navigateTo(Activity currentActivity, Class<? extends Activity> destinationActivity) {
         Intent intent = new Intent(currentActivity, destinationActivity);
         currentActivity.startActivity(intent);
-        currentActivity.finish();
     }
 
 }

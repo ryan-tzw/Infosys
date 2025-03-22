@@ -1,5 +1,7 @@
 package com.example.infosys.adapters;
 
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.infosys.R;
+import com.example.infosys.activities.ChatActivity;
 import com.example.infosys.model.User;
 
 import java.util.List;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendViewHolder> {
+    private static final String TAG = "FriendsAdapter";
     private final List<User> friendsList;
 
     public FriendsAdapter(List<User> friendsList) {
@@ -24,16 +28,25 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
     @NonNull
     @Override
     public FriendViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.friend_card, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_friend, parent, false);
         return new FriendViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
-        User user = friendsList.get(position);
-        holder.friendName.setText(user.getUsername());
+        User friend = friendsList.get(position);
+        holder.friendName.setText(friend.getUsername());
 //        holder.latestMessage.setText(user.getLatestMessage());
 //        holder.friendProfilePic.setImageResource(user.getProfilePic());
+
+        holder.itemView.setOnClickListener(v -> {
+            Log.d(TAG, "onBindViewHolder: Start");
+            Intent intent = new Intent(v.getContext(), ChatActivity.class);
+            intent.putExtra("friendId", friend.getUid());
+            intent.putExtra("friendName", friend.getUsername());
+            v.getContext().startActivity(intent);
+            Log.d(TAG, "onBindViewHolder: End");
+        });
     }
 
     @Override
@@ -41,7 +54,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         return friendsList.size();
     }
 
-    static class FriendViewHolder extends RecyclerView.ViewHolder {
+    public static class FriendViewHolder extends RecyclerView.ViewHolder {
         TextView friendName, latestMessage;
         ImageView friendProfilePic;
 

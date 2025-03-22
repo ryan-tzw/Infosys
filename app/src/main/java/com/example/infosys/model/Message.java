@@ -1,43 +1,30 @@
 package com.example.infosys.model;
 
 public class Message {
-    private String text;
+    private String body;
     private String senderId;
     private long timestamp;
 
-    // Empty constructor needed for Firestore serialization
+    // Empty constructor needed for Firestore
     public Message() {
     }
 
-    public Message(String text, String senderId, long timestamp) {
-        this.text = text;
+    public Message(String body, String senderId, long timestamp) {
+        this.body = body;
         this.senderId = senderId;
         this.timestamp = timestamp;
-    }
-
-    // Getters and setters
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 
     public String getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(String senderId) {
-        this.senderId = senderId;
+    public String getBody() {
+        return body;
     }
 
     public long getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 }
 

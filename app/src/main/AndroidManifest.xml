@@ -15,6 +15,10 @@
         android:theme="@style/Theme.Infosys"
         tools:targetApi="31">
         <activity
+            android:name=".activities.ChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity
             android:name=".activities.RegisterActivity"
             android:exported="false" />
         <activity
