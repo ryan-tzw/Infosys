@@ -32,4 +32,7 @@
     <string name="all_posts">All Posts</string>
     <string name="all_communities">All Communities</string>
     <string name="your_communities">Your Communities</string>
+    <string name="create_community">Create Community</string>
+    <string name="description">Description</string>
+    <string name="community_name">Community Name</string>
 </resources>

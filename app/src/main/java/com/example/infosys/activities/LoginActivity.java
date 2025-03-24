@@ -11,14 +11,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
 import com.example.infosys.R;
-import com.example.infosys.interfaces.LoginNavCallback;
+import com.example.infosys.interfaces.LoginCallback;
 import com.example.infosys.managers.LoginManager;
 import com.example.infosys.utils.AndroidUtil;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Map;
 
-public class LoginActivity extends AppCompatActivity implements LoginNavCallback {
+public class LoginActivity extends AppCompatActivity implements LoginCallback {
     private static final String TAG = LoginActivity.class.getSimpleName();
     private EditText edtEmail, edtPassword;
     private TextInputLayout tilEmail, tilPassword;

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.infosys.constants.Collections;
+import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,6 +26,10 @@ public class FirebaseUtil {
             return null;
         }
         return currentUser.getUid();
+    }
+
+    public static String getCurrentUsername() {
+        return UserManager.getInstance().getUserName();
     }
 
     public static void getCurrentUser(UsernameCallback callback) {
@@ -54,7 +59,13 @@ public class FirebaseUtil {
     }
 
     public static void logoutUser() {
+        UserManager.getInstance().clearUserData();
         FirebaseAuth.getInstance().signOut();
+    }
+
+    public static void instantiateUserManager(String userId, String userName) {
+        UserManager userManager = UserManager.getInstance();
+        userManager.setUserData(userId, userName);
     }
 
     public void addUserToFirestore(String uid, String username, String email) {

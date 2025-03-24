@@ -2,6 +2,7 @@ package com.example.infosys.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Community {
     private String id;
@@ -11,11 +12,24 @@ public class Community {
     private List<String> tags;
     private boolean isPrivate;
     private List<String> adminIds;
+    private String ownerId;
 
     public Community() {
         // Required empty public constructor
     }
 
+    public Community(String name, String description) {
+        this.id = UUID.randomUUID().toString();
+        this.name = name;
+        this.description = description;
+        this.memberCount = 0;
+        this.tags = null;
+        this.isPrivate = false;
+        this.adminIds = new ArrayList<>();
+        this.ownerId = null;
+    }
+
+    // This was just for debugging/testing purposes
     public Community(String id, String name, String description) {
         this.id = id;
         this.name = name;
@@ -24,6 +38,7 @@ public class Community {
         this.tags = null;
         this.isPrivate = false;
         this.adminIds = new ArrayList<>();
+        this.ownerId = null;
     }
 
     public String getId() {
@@ -84,5 +99,13 @@ public class Community {
 
     public void removeAdminId(String adminId) {
         adminIds.remove(adminId);
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
     }
 }

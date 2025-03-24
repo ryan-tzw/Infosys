@@ -73,36 +73,7 @@ public class CommunitiesManager {
                 });
     }
 
-    public void getCommunity(String communityId, OnCommunityRetrieved callback) {
-        db.collection(Collections.COMMUNITIES).document(communityId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    callback.onCommunityRetrieved(documentSnapshot.toObject(Community.class));
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "getCommunity: Error retrieving community: ", e);
-                });
-    }
-
-    public void createCommunity(Community community) {
-        db.collection(Collections.COMMUNITIES).document(community.getId()).set(community)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "createCommunity: Community created with ID: " + community.getId());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "createCommunity: Error creating community: ", e);
-                });
-    }
-
-
-    public void deleteCommunity(String communityId) {
-        // Delete a community
-    }
-
     public interface OnCommunitiesRetrieved {
         void onCommunitiesRetrieved(List<Community> communities);
-    }
-
-    public interface OnCommunityRetrieved {
-        void onCommunityRetrieved(Community community);
     }
 }

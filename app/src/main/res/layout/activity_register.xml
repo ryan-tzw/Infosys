@@ -49,6 +49,7 @@
                 android:autofillHints="emailAddress"
                 android:hint="@string/email"
                 android:inputType="textEmailAddress"
+                android:maxLines="1"
 
                 />
         </com.google.android.material.textfield.TextInputLayout>
@@ -68,7 +69,8 @@
                 android:layout_height="wrap_content"
                 android:autofillHints="username"
                 android:hint="@string/username"
-                android:inputType="text" />
+                android:inputType="text"
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -86,7 +88,8 @@
                 android:layout_height="wrap_content"
                 android:autofillHints="password"
                 android:hint="@string/password"
-                android:inputType="textPassword" />
+                android:inputType="textPassword"
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -104,7 +107,8 @@
                 android:layout_height="wrap_content"
                 android:autofillHints="password"
                 android:hint="@string/confirm_password"
-                android:inputType="textPassword" />
+                android:inputType="textPassword"
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button

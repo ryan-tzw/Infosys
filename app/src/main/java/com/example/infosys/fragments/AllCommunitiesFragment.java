@@ -20,6 +20,7 @@ import com.example.infosys.managers.CommunitiesManager;
 import com.example.infosys.model.Community;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.viewmodels.AllCommunitiesViewModel;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,10 @@ public class AllCommunitiesFragment extends Fragment {
     private static final String TAG = "AllCommunitiesFragment";
     private CommunitiesManager communitiesManager;
     private AllCommunitiesViewModel viewModel;
+    private boolean popularCommunitiesLoaded = false;
+    private boolean allCommunitiesLoaded = false;
+    private CircularProgressIndicator progressIndicator;
+    private NestedScrollView scrollView;
 
     public AllCommunitiesFragment() {
         // Required empty public constructor
@@ -50,6 +55,10 @@ public class AllCommunitiesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_all_communities, container, false);
+
+        progressIndicator = view.findViewById(R.id.progress_indicator);
+        scrollView = view.findViewById(R.id.nested_scroll_view);
+
         setupAllCommunities(view);
         setupPopularCommunities(view);
         return view;
@@ -90,6 +99,9 @@ public class AllCommunitiesFragment extends Fragment {
             communities.clear();
             communities.addAll(communitiesList);
             adapter.notifyDataSetChanged();
+
+            allCommunitiesLoaded = true;
+            checkIfAllDataLoaded();
         });
     }
 
@@ -108,6 +120,16 @@ public class AllCommunitiesFragment extends Fragment {
             popularCommunities.clear();
             popularCommunities.addAll(popularCommunitiesList);
             adapter.notifyDataSetChanged();
+
+            popularCommunitiesLoaded = true;
+            checkIfAllDataLoaded();
         });
+    }
+
+    private void checkIfAllDataLoaded() {
+        if (popularCommunitiesLoaded && allCommunitiesLoaded) {
+            progressIndicator.setVisibility(View.GONE);
+            scrollView.setVisibility(View.VISIBLE);
+        }
     }
 }

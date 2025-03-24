@@ -8,7 +8,7 @@ import com.google.firebase.Timestamp;
     General user data is stored in the User class.
  */
 public class Member {
-    private Role role;
+    private boolean isOwner;
     private String uid;
     private String nickname;
     private Timestamp dateJoined;
@@ -17,11 +17,10 @@ public class Member {
     public Member() {
     }
 
-    public Member(String uid, String nickname, Role role) {
+    public Member(String uid, String nickname) {
         this.uid = uid;
         this.nickname = nickname;
         this.dateJoined = Timestamp.now();
-        this.role = role;
     }
 
     public String getUid() {
@@ -39,10 +38,4 @@ public class Member {
     public Timestamp getDateJoined() {
         return dateJoined;
     }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public enum Role {OWNER, ADMIN, MEMBER}
 }

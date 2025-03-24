@@ -4,8 +4,10 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.infosys.interfaces.LoginNavCallback;
+import com.example.infosys.interfaces.LoginCallback;
+import com.example.infosys.model.User;
 import com.example.infosys.utils.AndroidUtil;
+import com.example.infosys.utils.FirebaseUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -45,7 +47,7 @@ public class LoginManager {
         return errors;
     }
 
-    public void loginUser(String email, String password, LoginNavCallback callback) {
+    public void loginUser(String email, String password, LoginCallback callback) {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
                     FirebaseUser user = mAuth.getCurrentUser();
@@ -56,7 +58,11 @@ public class LoginManager {
                     db.collection(USER_COLLECTION).document(user.getUid()).get()
                             .addOnSuccessListener(documentSnapshot -> {
                                 if (documentSnapshot.exists()) {
-                                    String username = documentSnapshot.getString("username");
+                                    User userData = documentSnapshot.toObject(User.class);
+                                    assert userData != null;
+                                    FirebaseUtil.instantiateUserManager(userData.getUid(), userData.getUsername());
+
+                                    String username = userData.getUsername();
                                     AndroidUtil.showToast(appContext, "Welcome, " + username);
                                     callback.onLoginSuccess();
                                 } else {
@@ -68,7 +74,7 @@ public class LoginManager {
                 .addOnFailureListener(e -> Log.e(TAG, "loginUser: ", e));
     }
 
-    public void autoLogin(LoginNavCallback callback) {
+    public void autoLogin(LoginCallback callback) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null || !user.isEmailVerified()) {
             callback.onLoginFailure(new Exception("User not signed in or email not verified"));
@@ -77,6 +83,10 @@ public class LoginManager {
         db.collection(USER_COLLECTION).document(user.getUid()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        User userData = documentSnapshot.toObject(User.class);
+                        assert userData != null;
+                        FirebaseUtil.instantiateUserManager(userData.getUid(), userData.getUsername());
+
                         callback.onLoginSuccess();
                     } else {
                         callback.onLoginFailure(new Exception("User data not found"));

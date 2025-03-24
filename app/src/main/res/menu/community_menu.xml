@@ -6,4 +6,9 @@
         android:id="@+id/logout"
         android:title="@string/logout"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/test_button"
+        android:title="Test"
+        app:showAsAction="never" />
+
 </menu>

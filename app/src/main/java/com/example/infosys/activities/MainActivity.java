@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.infosys.R;
 import com.example.infosys.fragments.CommunitiesFragment;
+import com.example.infosys.fragments.CommunityFragment;
 import com.example.infosys.fragments.FriendsFragment;
 import com.example.infosys.fragments.HomeFragment;
 import com.example.infosys.fragments.NotificationsFragment;
@@ -43,6 +44,16 @@ public class MainActivity extends AppCompatActivity {
 
         initialiseAppBar(topAppBar);
         initialiseFragments();
+
+        String communityId = getIntent().getStringExtra("communityId");
+        if (communityId != null) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_communities);
+            CommunityFragment fragment = CommunityFragment.newInstance(communityId);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container_view, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     private void initialiseAppBar(MaterialToolbar appbar) {

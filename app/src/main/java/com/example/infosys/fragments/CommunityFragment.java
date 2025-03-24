@@ -24,6 +24,10 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+
+/*
+ This fragment displays individual communities
+ */
 public class CommunityFragment extends Fragment {
     private static final String TAG = "CommunityFragment";
     private static final String ARG_PARAM1 = "communityId";
@@ -101,7 +105,7 @@ public class CommunityFragment extends Fragment {
     }
 
     private void populateData() {
-        CommunityManager.getInstance().getCommunityDetails(communityId, community -> {
+        CommunityManager.getInstance().getCommunity(communityId, community -> {
             if (community == null) {
                 Log.e(TAG, "onCreateView: Community is null");
                 return;

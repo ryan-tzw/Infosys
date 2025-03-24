@@ -1,6 +1,6 @@
 package com.example.infosys.interfaces;
 
-public interface LoginNavCallback {
+public interface LoginCallback {
     void onLoginSuccess();
 
     void onLoginFailure(Exception e);
