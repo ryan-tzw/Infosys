@@ -6,29 +6,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.infosys.R;
 import com.example.infosys.adapters.FriendsAdapter;
-import com.example.infosys.managers.FirebaseManager;
 import com.example.infosys.managers.FriendsManager;
 import com.example.infosys.model.User;
 import com.example.infosys.utils.AndroidUtil;
+import com.example.infosys.utils.FirebaseUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FriendsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class FriendsFragment extends Fragment {
+public class FriendsFragment extends BaseFragment {
     private static final String TAG = "FriendsFragment";
     private FriendsManager friendsManager;
-    private FirebaseManager firebaseManager;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -44,24 +37,29 @@ public class FriendsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            Log.d("FriendsFragment", "Arguments received");
-        }
-
         friendsManager = FriendsManager.getInstance();
-        firebaseManager = FirebaseManager.getInstance(getContext());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
+        setupRecyclerView(view);
+        return view;
+    }
 
+    private void setupRecyclerView(View view) {
         RecyclerView recyclerView = view.findViewById(R.id.friends_recycler_view);
-        List<User> friendsList = new ArrayList<>();
-        String currentUserId = firebaseManager.getCurrentUser().getUid();
 
-        Log.d(TAG, "onCreateView: currentUserId: " + currentUserId);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        AndroidUtil.setupDivider(view, recyclerView);
+
+        List<User> friendsList = new ArrayList<>();
+        FriendsAdapter adapter = new FriendsAdapter(friendsList);
+        recyclerView.setAdapter(adapter);
+
+        String currentUserId = FirebaseUtil.getCurrentUserUid();
 
         friendsManager.getFriendsList(currentUserId, new FriendsManager.FriendsListCallback() {
             @Override
@@ -71,18 +69,9 @@ public class FriendsFragment extends Fragment {
             }
 
             @Override
-            public void onError(String errorMessage) {
-                AndroidUtil.errorToast(getContext(), errorMessage);
+            public void onError(Exception e) {
+                Log.e(TAG, "onError: ", e);
             }
         });
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        FriendsAdapter adapter = new FriendsAdapter(friendsList);
-        recyclerView.setAdapter(adapter);
-
-        Log.d(TAG, "onCreateView: " + friendsList.size());
-
-        return view;
     }
 }

@@ -26,4 +26,10 @@
     <string name="message">Message</string>
     <string name="send_button">Send Button</string>
     <string name="placeholder_text">Placeholder text</string>
+    <string name="you">You</string>
+    <string name="chats">Chats</string>
+    <string name="profile_picture_description">Profile Picture</string>
+    <string name="all_posts">All Posts</string>
+    <string name="all_communities">All Communities</string>
+    <string name="your_communities">Your Communities</string>
 </resources>

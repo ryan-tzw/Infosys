@@ -3,6 +3,7 @@ package com.example.infosys.managers;
 import android.util.Log;
 
 import com.example.infosys.model.Message;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -29,7 +30,7 @@ public class ChatManager {
         return instance;
     }
 
-    private static String generateChatId(String userId1, String userId2) {
+    public static String generateChatId(String userId1, String userId2) {
         return (userId1.compareTo(userId2) < 0) ? userId1 + "_" + userId2 : userId2 + "_" + userId1;
     }
 
@@ -63,7 +64,7 @@ public class ChatManager {
         if (msgText.isBlank() || chatId == null) return;
 
 
-        Message message = new Message(msgText, senderId, System.currentTimeMillis());
+        Message message = new Message(msgText, senderId, Timestamp.now());
 
         db.collection(COLLECTION).document(chatId)
                 .collection("messages")

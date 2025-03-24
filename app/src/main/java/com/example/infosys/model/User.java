@@ -9,17 +9,15 @@ public class User implements Serializable {
     private String uid;
     private String username;
     private String email;
-    private String profilePicture;
-    private String fcm_token;
     private List<User> friendsList;
+    private List<String> communitiesList;
 
     public User(String uid, String username, String email) {
         this.uid = uid;
         this.username = username;
         this.email = email;
-        this.profilePicture = null;
-        this.fcm_token = null;
         this.friendsList = new ArrayList<>();
+        this.communitiesList = new ArrayList<>();
     }
 
     public User() {
@@ -37,16 +35,34 @@ public class User implements Serializable {
         return email;
     }
 
-    public String getProfilePic() {
-        return profilePicture;
-    }
-
-    public String getFcmToken() {
-        return fcm_token;
-    }
-
     public List<User> getFriendsList() {
         return friendsList;
+    }
+
+    public List<String> getCommunitiesList() {
+        return communitiesList;
+    }
+
+    public void addFriend(User friend) {
+        if (friendsList == null) {
+            friendsList = new ArrayList<>();
+        }
+        friendsList.add(friend);
+    }
+
+    public void removeFriend(User friend) {
+        friendsList.remove(friend);
+    }
+
+    public void addCommunity(String communityId) {
+        if (communitiesList == null) {
+            communitiesList = new ArrayList<>();
+        }
+        communitiesList.add(communityId);
+    }
+
+    public void removeCommunity(String communityId) {
+        communitiesList.remove(communityId);
     }
 
     @Override
@@ -59,53 +75,6 @@ public class User implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(uid, username, email, profilePicture, fcm_token);
-    }
-
-    public static class UserBuilder {
-        private String uid;
-        private String username;
-        private String email;
-        private String profile_pic;
-        private String fcm_token;
-        private List<User> friendsList;
-
-        public UserBuilder setUid(String uid) {
-            this.uid = uid;
-            return this;
-        }
-
-        public UserBuilder setUsername(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public UserBuilder setEmail(String email) {
-            this.email = email;
-            return this;
-        }
-
-        public UserBuilder setProfilePic(String profile_pic) {
-            this.profile_pic = profile_pic;
-            return this;
-        }
-
-        public UserBuilder setFcmToken(String fcm_token) {
-            this.fcm_token = fcm_token;
-            return this;
-        }
-
-        public UserBuilder setFriendsList(List<User> friendsList) {
-            this.friendsList = friendsList;
-            return this;
-        }
-
-        public User build() {
-            User user = new User(uid, username, email);
-            user.profilePicture = this.profile_pic;
-            user.fcm_token = this.fcm_token;
-            user.friendsList = this.friendsList;
-            return user;
-        }
+        return Objects.hash(uid, username, email);
     }
 }

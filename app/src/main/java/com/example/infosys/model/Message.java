@@ -1,15 +1,17 @@
 package com.example.infosys.model;
 
+import com.google.firebase.Timestamp;
+
 public class Message {
     private String body;
     private String senderId;
-    private long timestamp;
+    private Timestamp timestamp;
 
     // Empty constructor needed for Firestore
     public Message() {
     }
 
-    public Message(String body, String senderId, long timestamp) {
+    public Message(String body, String senderId, Timestamp timestamp) {
         this.body = body;
         this.senderId = senderId;
         this.timestamp = timestamp;
@@ -23,7 +25,7 @@ public class Message {
         return body;
     }
 
-    public long getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 }

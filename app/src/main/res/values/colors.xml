@@ -5,4 +5,5 @@
     <color name="primaryColor">#54C7F8</color>
     <color name="secondaryColor">#B6DCF7</color>
     <color name="tertiaryColor">#DCE6F6</color>
+    <color name="dark">#49454f</color>
 </resources>

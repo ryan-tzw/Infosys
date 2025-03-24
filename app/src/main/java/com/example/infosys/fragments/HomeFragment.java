@@ -9,14 +9,15 @@ import android.widget.Button;
 import androidx.fragment.app.Fragment;
 
 import com.example.infosys.R;
-import com.example.infosys.managers.FirebaseManager;
+import com.example.infosys.managers.CommunitiesManager;
+import com.example.infosys.model.Community;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link HomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends BaseFragment {
 
     public HomeFragment() {
         // Required empty public constructor
@@ -50,15 +51,11 @@ public class HomeFragment extends Fragment {
         // test button on click listener
         Button testButton = view.findViewById(R.id.test_button);
         testButton.setOnClickListener(v -> {
-            // Add dummy users to Firebase
-            FirebaseManager firebaseManager = FirebaseManager.getInstance(getContext());
-
-            firebaseManager.addUserToFirestore("user1", "John Doe", "user1@example.com");
-            firebaseManager.addUserToFirestore("user2", "Jane Doe", "user2@example.com");
-            firebaseManager.addUserToFirestore("user3", "Alice Smith", "user3@example.com");
-            firebaseManager.addUserToFirestore("user4", "Bob Johnson", "user4@example.com");
-            firebaseManager.addUserToFirestore("user5", "Charlie Brown", "user5@example.com");
-
+            // Add dummy communities to Firestore
+            CommunitiesManager communitiesManager = CommunitiesManager.getInstance();
+            
+            communitiesManager.createCommunity(new Community("testCommunity4", "Test Community 4", "This is a test community 4"));
+            communitiesManager.createCommunity(new Community("testCommunity5", "Test Community 5", "This is a test community 5"));
         });
 
         return view;

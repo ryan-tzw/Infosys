@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".activities.RegisterActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -126,6 +127,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:fontFamily="@font/fredoka"
             android:text="@string/login_prompt"
             android:textColor="@color/primaryColor"
             app:layout_constraintEnd_toEndOf="@+id/register_button"

@@ -1,5 +1,6 @@
 package com.example.infosys.activities;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
@@ -30,6 +31,7 @@ public class ChatActivity extends AppCompatActivity {
     ChatManager chatManager;
     List<Message> messageList;
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

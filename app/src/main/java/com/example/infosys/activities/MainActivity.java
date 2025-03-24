@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,8 +17,9 @@ import com.example.infosys.fragments.CommunitiesFragment;
 import com.example.infosys.fragments.FriendsFragment;
 import com.example.infosys.fragments.HomeFragment;
 import com.example.infosys.fragments.NotificationsFragment;
-import com.example.infosys.managers.FirebaseManager;
+import com.example.infosys.fragments.ProfileFragment;
 import com.example.infosys.utils.AndroidUtil;
+import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -25,9 +27,8 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private FirebaseManager firebaseManager;
 
-    private Fragment homeFragment, communitiesFragment, notificationsFragment, friendsFragment, activeFragment;
+    private Fragment homeFragment, communitiesFragment, notificationsFragment, friendsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
 
     @Override
@@ -38,7 +39,8 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         MaterialToolbar topAppBar = findViewById(R.id.app_bar);
 
-        firebaseManager = FirebaseManager.getInstance(this);
+        overrideBackButton();
+
         initialiseAppBar(topAppBar);
         initialiseFragments();
     }
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialiseFragments() {
+        profileFragment = new ProfileFragment();
         homeFragment = new HomeFragment();
         communitiesFragment = new CommunitiesFragment();
         notificationsFragment = new NotificationsFragment();
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         activeFragment = homeFragment;
 
         getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container_view, profileFragment, "5").hide(profileFragment)
                 .add(R.id.fragment_container_view, notificationsFragment, "4").hide(notificationsFragment)
                 .add(R.id.fragment_container_view, friendsFragment, "3").hide(friendsFragment)
                 .add(R.id.fragment_container_view, communitiesFragment, "2").hide(communitiesFragment)
@@ -64,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                getSupportFragmentManager().popBackStack();
+            }
 
             if (item.getItemId() == R.id.nav_home) {
                 transaction.hide(activeFragment).show(homeFragment);
@@ -74,14 +82,17 @@ public class MainActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.nav_notifications) {
                 transaction.hide(activeFragment).show(notificationsFragment);
                 activeFragment = notificationsFragment;
-            } else if (item.getItemId() == R.id.nav_friends) {
+            } else if (item.getItemId() == R.id.nav_chats) {
                 transaction.hide(activeFragment).show(friendsFragment);
                 activeFragment = friendsFragment;
+            } else if (item.getItemId() == R.id.nav_profile) {
+                transaction.hide(activeFragment).show(profileFragment);
+                activeFragment = profileFragment;
             }
+
             transaction.commit();
             return true;
         });
-
     }
 
     @Override
@@ -102,7 +113,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void logout() {
         Log.d(TAG, "Logging out user");
-        firebaseManager.logoutUser();
+        FirebaseUtil.logoutUser();
         AndroidUtil.navigateTo(MainActivity.this, LoginActivity.class);
     }
+
+    private void overrideBackButton() {
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (!FirebaseUtil.isUserLoggedIn()) {
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        };
+
+        getOnBackPressedDispatcher().addCallback(this, callback);
+    }
+
 }

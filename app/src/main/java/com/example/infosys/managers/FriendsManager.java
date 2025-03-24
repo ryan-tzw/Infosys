@@ -2,7 +2,10 @@ package com.example.infosys.managers;
 
 import android.util.Log;
 
+import com.example.infosys.model.Conversation;
 import com.example.infosys.model.User;
+import com.example.infosys.utils.FirebaseUtil;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,7 +31,6 @@ public class FriendsManager {
     }
 
     public void addFriend(String currentUserId, String friendUserId, final FriendsCallback callback) {
-        // Add the friend to the current user's friend list
         db.collection("users").document(currentUserId)
                 .update("friends", FieldValue.arrayUnion(friendUserId))
                 .addOnSuccessListener(aVoid -> {
@@ -36,13 +38,12 @@ public class FriendsManager {
                     db.collection("users").document(friendUserId)
                             .update("friends", FieldValue.arrayUnion(currentUserId))
                             .addOnSuccessListener(aVoid2 -> callback.onSuccess())
-                            .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+                            .addOnFailureListener(callback::onError);
                 })
-                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+                .addOnFailureListener(callback::onError);
     }
 
     public void removeFriend(String currentUserId, String friendUserId, final FriendsCallback callback) {
-        // Remove the friend from the current user's friend list
         db.collection("users").document(currentUserId)
                 .update("friends", FieldValue.arrayRemove(friendUserId))
                 .addOnSuccessListener(aVoid -> {
@@ -50,13 +51,62 @@ public class FriendsManager {
                     db.collection("users").document(friendUserId)
                             .update("friends", FieldValue.arrayRemove(currentUserId))
                             .addOnSuccessListener(aVoid2 -> callback.onSuccess())
-                            .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+                            .addOnFailureListener(callback::onError);
                 })
-                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+                .addOnFailureListener(callback::onError);
+    }
+
+    public void getConversationList(String currentUserId, final ConversationCallback callback) {
+        getFriendsList(currentUserId, new FriendsListCallback() {
+            @Override
+            public void onFriendsListReceived(List<User> friendsList) {
+                fetchConversationDetails(friendsList, callback);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+    private void fetchConversationDetails(List<User> friendsList, final ConversationCallback callback) {
+        List<Conversation> conversations = new ArrayList<>();
+        String currentUserId = FirebaseUtil.getCurrentUserUid();
+
+        for (User friend : friendsList) {
+            assert currentUserId != null;
+            String conversationId = ChatManager.generateChatId(currentUserId, friend.getUid());
+
+            db.collection("chats").document(conversationId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String lastMessage = documentSnapshot.getString("last_message");
+                            Timestamp lastUpdated = documentSnapshot.getTimestamp("last_updated");
+                            conversations.add(new Conversation(friend, lastMessage, lastUpdated));
+                        } else {
+                            conversations.add(new Conversation(friend, "Say hi!", Timestamp.now()));
+                        }
+                        if (conversations.size() == friendsList.size()) {
+                            conversations.sort((c1, c2) -> {
+                                // Compare by seconds first, and if they're equal, compare by nanoseconds
+                                int secondsComparison = Long.compare(c2.getLastUpdated().getSeconds(), c1.getLastUpdated().getSeconds());
+                                if (secondsComparison != 0) {
+                                    return secondsComparison;
+                                }
+                                // If the seconds are the same, compare nanoseconds
+                                return Integer.compare(c2.getLastUpdated().getNanoseconds(), c1.getLastUpdated().getNanoseconds());
+
+                            });
+                            callback.onConversationsReceived(conversations);
+                        }
+                    })
+                    .addOnFailureListener(callback::onError);
+        }
     }
 
     public void getFriendsList(String currentUserId, final FriendsListCallback callback) {
-        // Fetch the current user's friends list
         db.collection("users").document(currentUserId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -66,13 +116,13 @@ public class FriendsManager {
                         if (friendsList != null && !friendsList.isEmpty()) {
                             fetchFriendDetails(friendsList, callback);
                         } else {
-                            callback.onError("No friends found.");
+                            callback.onError(new Exception("No friends found."));
                         }
                     } else {
-                        callback.onError("User not found.");
+                        callback.onError(new Exception("No friends found."));
                     }
                 })
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                .addOnFailureListener(callback::onError);
     }
 
     private void fetchFriendDetails(List<String> friendsList, final FriendsListCallback callback) {
@@ -90,20 +140,26 @@ public class FriendsManager {
                     }
                     callback.onFriendsListReceived(friends);
                 })
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                .addOnFailureListener(callback::onError);
+    }
+
+    public interface ConversationCallback {
+        void onConversationsReceived(List<Conversation> conversations);
+
+        void onError(Exception e);
     }
 
     // Callback for friend operations
     public interface FriendsCallback {
         void onSuccess();
 
-        void onFailure(String errorMessage);
+        void onError(Exception e);
     }
 
     // Callback for fetching friends list
     public interface FriendsListCallback {
         void onFriendsListReceived(List<User> friends);
 
-        void onError(String errorMessage);
+        void onError(Exception e);
     }
 }
