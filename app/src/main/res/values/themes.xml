@@ -7,6 +7,10 @@
         <item name="colorSecondary">@color/secondaryColor</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/black</item>
+        <!--        <item name="colorOutline">@color/lightGray</item>-->
+        <!--        <item name="colorOnSurface">@color/lightGray</item>-->
+        <!--        <item name="colorOnSecondaryContainer">@color/primaryColor</item>-->
+        <!--        <item name="colorSecondaryContainer">@color/tertiaryColor</item>-->
     </style>
 
     <style name="Theme.Infosys" parent="Base.Theme.Infosys" />

@@ -1,4 +1,4 @@
-package com.example.infosys.fragments;
+package com.example.infosys.fragments.main;
 
 import androidx.fragment.app.Fragment;
 

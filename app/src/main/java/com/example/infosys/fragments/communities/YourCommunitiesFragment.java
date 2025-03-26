@@ -1,4 +1,4 @@
-package com.example.infosys.fragments;
+package com.example.infosys.fragments.communities;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -32,10 +32,8 @@ public class YourCommunitiesFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static YourCommunitiesFragment newInstance(String param1, String param2) {
-        YourCommunitiesFragment fragment = new YourCommunitiesFragment();
-        Bundle args = new Bundle();
-        return fragment;
+    public static YourCommunitiesFragment newInstance() {
+        return new YourCommunitiesFragment();
     }
 
     @Override
@@ -50,7 +48,7 @@ public class YourCommunitiesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_your_communities, container, false);
         setupYourCommunities(view);
 
-        floatingActionButton = view.findViewById(R.id.fab);
+        floatingActionButton = view.findViewById(R.id.fab_create_community);
         floatingActionButton.setOnClickListener(v -> {
             createCommunity();
         });

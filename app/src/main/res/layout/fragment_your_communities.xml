@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.YourCommunitiesFragment">
+    tools:context=".fragments.communities.YourCommunitiesFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/your_communities_recycler_view"
@@ -18,18 +18,18 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginHorizontal="50dp"
-        android:text="You haven't joined any communities yet 😔"
+        android:text="@string/you_haven_t_joined_any_communities_yet"
         android:textAlignment="center"
         android:textSize="20sp"
         android:visibility="gone" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_create_community"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:contentDescription="Create a community"
+        android:contentDescription="@string/create_a_community"
         android:src="@drawable/ic_add" />
 
 

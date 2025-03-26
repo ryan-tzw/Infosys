@@ -2,7 +2,6 @@ package com.example.infosys.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Community {
     private String id;
@@ -15,27 +14,16 @@ public class Community {
     private String ownerId;
 
     public Community() {
-        // Required empty public constructor
+        // Required empty public constructor for Firestore
     }
 
-    public Community(String name, String description) {
-        this.id = UUID.randomUUID().toString();
-        this.name = name;
-        this.description = description;
-        this.memberCount = 0;
-        this.tags = null;
-        this.isPrivate = false;
-        this.adminIds = new ArrayList<>();
-        this.ownerId = null;
-    }
-
-    // This was just for debugging/testing purposes
+    // Constructor for creating a new community
     public Community(String id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.memberCount = 0;
-        this.tags = null;
+        this.tags = new ArrayList<>();
         this.isPrivate = false;
         this.adminIds = new ArrayList<>();
         this.ownerId = null;

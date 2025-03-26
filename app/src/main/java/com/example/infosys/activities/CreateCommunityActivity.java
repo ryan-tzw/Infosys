@@ -17,6 +17,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class CreateCommunityActivity extends AppCompatActivity {
     private static final String TAG = "CreateCommunityActivity";
@@ -35,14 +36,15 @@ public class CreateCommunityActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.app_bar);
         toolbar.setNavigationIcon(R.drawable.ic_back);
         toolbar.setNavigationOnClickListener(v -> finish());
-        
+
         instantiateViews();
     }
 
     private void createCommunity() {
         String communityName = Objects.requireNonNull(edtCommunityName.getText()).toString();
         String communityDescription = Objects.requireNonNull(edtCommunityDescription.getText()).toString();
-        Community community = new Community(communityName, communityDescription);
+        String communityId = UUID.randomUUID().toString();
+        Community community = new Community(communityId, communityName, communityDescription);
         CommunityManager.getInstance().createCommunity(community, this::navigateToNewCommunity);
     }
 

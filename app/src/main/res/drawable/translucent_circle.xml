@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#88FFFFFF" /> <!-- Change the color as needed -->
+    <corners android:radius="1000dp" /> <!-- Make the corners rounded, 50% will make it a circle -->
+    <size android:width="20dp" android:height="20dp" /> <!-- Adjust the size of the button -->
+</shape>

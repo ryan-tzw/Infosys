@@ -13,12 +13,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.infosys.R;
-import com.example.infosys.fragments.CommunitiesFragment;
-import com.example.infosys.fragments.CommunityFragment;
-import com.example.infosys.fragments.FriendsFragment;
-import com.example.infosys.fragments.HomeFragment;
-import com.example.infosys.fragments.NotificationsFragment;
-import com.example.infosys.fragments.ProfileFragment;
+import com.example.infosys.fragments.communities.CommunityFragment;
+import com.example.infosys.fragments.main.CommunitiesFragment;
+import com.example.infosys.fragments.main.FriendsFragment;
+import com.example.infosys.fragments.main.HomeFragment;
+import com.example.infosys.fragments.main.NotificationsFragment;
+import com.example.infosys.fragments.main.ProfileFragment;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;

@@ -6,14 +6,25 @@ import android.util.Log;
 import com.example.infosys.constants.Collections;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.User;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class FirebaseUtil {
     private static final String TAG = "FirebaseUtil";
+
+    public static String timestampToString(Timestamp timestamp) {
+        Date date = timestamp.toDate();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy h:mm a", Locale.getDefault());
+        return sdf.format(date);
+    }
 
     public static boolean isUserLoggedIn() {
         return FirebaseAuth.getInstance().getCurrentUser() != null;

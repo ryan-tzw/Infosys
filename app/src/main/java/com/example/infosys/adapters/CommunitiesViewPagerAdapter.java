@@ -4,12 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.example.infosys.fragments.AllCommunitiesFragment;
-import com.example.infosys.fragments.YourCommunitiesFragment;
+import com.example.infosys.fragments.communities.AllCommunitiesFragment;
+import com.example.infosys.fragments.communities.YourCommunitiesFragment;
 
-public class ViewPagerAdapter extends FragmentStateAdapter {
+public class CommunitiesViewPagerAdapter extends FragmentStateAdapter {
 
-    public ViewPagerAdapter(Fragment fragment) {
+    public CommunitiesViewPagerAdapter(Fragment fragment) {
         super(fragment);
     }
 

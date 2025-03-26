@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.infosys.R;
-import com.example.infosys.fragments.CommunityFragment;
+import com.example.infosys.fragments.communities.CommunityFragment;
 import com.example.infosys.model.Community;
 
 import java.util.List;

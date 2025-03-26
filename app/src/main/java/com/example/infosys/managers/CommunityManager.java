@@ -1,21 +1,26 @@
 package com.example.infosys.managers;
 
+import android.net.Uri;
 import android.util.Log;
 
 import com.example.infosys.constants.Collections;
 import com.example.infosys.model.Community;
 import com.example.infosys.model.Member;
-import com.example.infosys.model.User;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.Objects;
 
 public class CommunityManager {
     private static final String TAG = "CommunityManager";
     private static CommunityManager instance;
-    FirebaseFirestore db;
+    private final FirebaseFirestore db;
 
     private CommunityManager() {
         db = FirebaseFirestore.getInstance();
@@ -30,12 +35,8 @@ public class CommunityManager {
 
     public void getCommunity(String communityId, OnCommunityRetrieved callback) {
         db.collection(Collections.COMMUNITIES).document(communityId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    callback.onCommunityRetrieved(documentSnapshot.toObject(Community.class));
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "getCommunityDetails: Error retrieving community details: ", e);
-                });
+                .addOnSuccessListener(documentSnapshot -> callback.onCommunityRetrieved(documentSnapshot.toObject(Community.class)))
+                .addOnFailureListener(e -> Log.e(TAG, "getCommunity: Error retrieving community details: ", e));
     }
 
     public void createCommunity(Community community, CreateCommunityCallback callback) {
@@ -46,9 +47,7 @@ public class CommunityManager {
                     Log.d(TAG, "createCommunity: Community created with ID: " + community.getId());
                     setupNewCommunity(community, callback);
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "createCommunity: Error creating community: ", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "createCommunity: Error creating community: ", e));
     }
 
     private void setupNewCommunity(Community community, CreateCommunityCallback callback) {
@@ -64,46 +63,8 @@ public class CommunityManager {
                     callback.onCommunityCreated(community.getId());
                     Log.d(TAG, "createCommunity: Successfully set up a community: " + community.getId());
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "createCommunity: Error while setting up community: ", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "createCommunity: Error while setting up community: ", e));
 
-    }
-
-    public Task<Void> joinCommunity(String communityId) {
-        Log.d(TAG, "joinCommunity: Joining Community...");
-        String currentUserId = FirebaseUtil.getCurrentUserUid();
-        String currentUsername = FirebaseUtil.getCurrentUsername();
-        Member member = new Member(currentUserId, currentUsername);
-
-        // Add user to member list
-        assert currentUserId != null;
-
-        Task<Void> addUserToMemberListTask = db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection("members").document(currentUserId)
-                .set(member);
-
-        Task<Void> incrementMemberCountTask = db.collection(Collections.COMMUNITIES).document(communityId)
-                .update("memberCount", FieldValue.increment(1));
-
-        Task<Void> addCommunityToUserTask = db.collection(Collections.USERS).document(currentUserId)
-                .get().continueWithTask(task -> {
-                    User user = task.getResult().toObject(User.class);
-                    assert user != null;
-                    user.addCommunity(communityId);
-                    return db.collection(Collections.USERS).document(currentUserId).set(user);
-                });
-
-        return Tasks.whenAllSuccess(addUserToMemberListTask, incrementMemberCountTask, addCommunityToUserTask)
-                .continueWithTask(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "joinCommunity: Successfully joined community: " + communityId);
-                        return Tasks.forResult(null);
-                    } else {
-                        Log.e(TAG, "joinCommunity: Error joining community: ", task.getException());
-                        return null;
-                    }
-                });
     }
 
     public Task<Void> addAdmin(String communityId, String userId) {
@@ -127,55 +88,74 @@ public class CommunityManager {
         assert userId != null;
         db.collection(Collections.COMMUNITIES).document(communityId)
                 .collection("members").document(userId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    callback.onUserMemberCheck(documentSnapshot.exists());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "isUserMemberOfCommunity: ", e);
-                });
-
+                .addOnSuccessListener(documentSnapshot -> callback.onUserMemberCheck(documentSnapshot.exists()))
+                .addOnFailureListener(e -> Log.e(TAG, "isUserMemberOfCommunity: ", e));
     }
 
-    public void leaveCommunity(String communityId) {
-        // Leave a community
+    public Task<Void> joinCommunity(String communityId) {
+        Log.d(TAG, "joinCommunity: Joining Community...");
         String currentUserId = FirebaseUtil.getCurrentUserUid();
+        String currentUsername = FirebaseUtil.getCurrentUsername();
+        Member member = new Member(currentUserId, currentUsername, Timestamp.now());
 
-        // Remove user from member list
+        // Add user to member list
         assert currentUserId != null;
-        db.collection(Collections.COMMUNITIES).document(communityId)
+
+        Task<Void> addUserToMemberListTask = db.collection(Collections.COMMUNITIES).document(communityId)
                 .collection("members").document(currentUserId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "leaveCommunity: User left community: " + communityId);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "leaveCommunity: ", e);
-                });
+                .set(member);
 
-        // Decrement member count
-        db.collection(Collections.COMMUNITIES).document(communityId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    Community community = documentSnapshot.toObject(Community.class);
-                    assert community != null;
-                    community.decrementMemberCount();
-                    db.collection(Collections.COMMUNITIES).document(communityId).set(community);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "leaveCommunity: Error decrementing member count: ", e);
-                });
+        Task<Void> incrementMemberCountTask = db.collection(Collections.COMMUNITIES).document(communityId)
+                .update("memberCount", FieldValue.increment(1));
 
-        // Remove community from user's list of communities
-        db.collection(Collections.USERS).document(currentUserId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    User user = documentSnapshot.toObject(User.class);
-                    assert user != null;
-                    user.removeCommunity(communityId);
-                    db.collection(Collections.USERS).document(currentUserId).set(user);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "leaveCommunity: Error removing from user's community list: ", e);
+        Task<Void> addCommunityToUserTask = db.collection(Collections.USERS).document(currentUserId)
+                .update("communitiesList", FieldValue.arrayUnion(communityId));
+
+        return Tasks.whenAllSuccess(addUserToMemberListTask, incrementMemberCountTask, addCommunityToUserTask)
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "joinCommunity: Successfully joined community: " + communityId);
+                        return Tasks.forResult(null);
+                    } else {
+                        Log.e(TAG, "joinCommunity: Error joining community: ", task.getException());
+                        return Tasks.forException(Objects.requireNonNull(task.getException()));
+                    }
                 });
     }
+
+    public Task<Void> leaveCommunity(String communityId) {
+        Log.d(TAG, "leaveCommunity: Leaving Community...");
+        String currentUserId = FirebaseUtil.getCurrentUserUid();
+        assert currentUserId != null;
+
+        Task<Void> removeUserFromMemberListTask = db.collection(Collections.COMMUNITIES).document(communityId)
+                .collection("members").document(currentUserId)
+                .delete();
+
+        Task<Void> decrementMemberCountTask = db.collection(Collections.COMMUNITIES).document(communityId)
+                .update("memberCount", FieldValue.increment(-1));
+
+        Task<Void> removeCommunityFromUserTask = db.collection(Collections.USERS).document(currentUserId)
+                .update("communitiesList", FieldValue.arrayRemove(communityId));
+
+        return Tasks.whenAllSuccess(removeUserFromMemberListTask, decrementMemberCountTask, removeCommunityFromUserTask)
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "leaveCommunity: Successfully left community: " + communityId);
+                        return Tasks.forResult(null);
+                    } else {
+                        Log.e(TAG, "leaveCommunity: Error leaving community", task.getException());
+                        return Tasks.forException(Objects.requireNonNull(task.getException()));
+                    }
+                });
+    }
+
+    public Task<Uri> getProfilePicture(String communityId) {
+        String path = String.format("communities/%s/profile", communityId);
+        StorageReference ref = FirebaseStorage.getInstance().getReference().child(path);
+        return ref.getDownloadUrl();
+    }
+
 
     public interface CreateCommunityCallback {
         void onCommunityCreated(String communityId);
