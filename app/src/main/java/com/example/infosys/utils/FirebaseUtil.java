@@ -40,7 +40,7 @@ public class FirebaseUtil {
     }
 
     public static String getCurrentUsername() {
-        return UserManager.getInstance().getUserName();
+        return UserManager.getInstance().getCurrentUserName();
     }
 
     public static void getCurrentUser(UsernameCallback callback) {
@@ -70,13 +70,13 @@ public class FirebaseUtil {
     }
 
     public static void logoutUser() {
-        UserManager.getInstance().clearUserData();
+        UserManager.getInstance().clearCurrentUserData();
         FirebaseAuth.getInstance().signOut();
     }
 
-    public static void instantiateUserManager(String userId, String userName) {
+    public static void instantiateUserManager(String userId, String userName, String profilePictureUrl) {
         UserManager userManager = UserManager.getInstance();
-        userManager.setUserData(userId, userName);
+        userManager.setCurrentUserData(userId, userName, profilePictureUrl);
     }
 
     public static void addUserToFirestore(String uid, String username, String email) {

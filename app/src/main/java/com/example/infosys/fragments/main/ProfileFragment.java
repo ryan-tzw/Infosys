@@ -17,8 +17,10 @@ import com.example.infosys.R;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.github.dhaval2404.imagepicker.ImagePicker;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -93,7 +95,20 @@ public class ProfileFragment extends BaseFragment {
 
         StorageReference imageRef = storageReference.child("profile_pictures/" + currentUserUid);
         imageRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> {
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return imageRef.getDownloadUrl();
+                })
+                .continueWithTask(urlTask -> {
+                    if (!urlTask.isSuccessful()) {
+                        throw urlTask.getException();
+                    }
+                    Uri downloadUrl = urlTask.getResult();
+                    return setUserProfilePictureUrl(downloadUrl.toString());
+                })
+                .addOnSuccessListener(aVoid -> {
                     progressIndicator.setVisibility(View.GONE);
                     Snackbar.make(requireView(), "Profile picture updated", Snackbar.LENGTH_SHORT).show();
                 })
@@ -102,6 +117,14 @@ public class ProfileFragment extends BaseFragment {
                     AndroidUtil.showToast(getContext(), "Failed to upload image");
                     Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
                 });
+    }
+
+    private Task<Void> setUserProfilePictureUrl(String url) {
+        String currentUserUid = FirebaseUtil.getCurrentUserUid();
+        assert currentUserUid != null;
+        return FirebaseFirestore.getInstance()
+                .collection("users").document(currentUserUid)
+                .update("profilePictureUrl", url);
     }
 
     private void getProfilePicture() {

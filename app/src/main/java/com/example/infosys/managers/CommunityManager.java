@@ -26,7 +26,7 @@ public class CommunityManager {
         db = FirebaseFirestore.getInstance();
     }
 
-    public static CommunityManager getInstance() {
+    public static synchronized CommunityManager getInstance() {
         if (instance == null) {
             instance = new CommunityManager();
         }

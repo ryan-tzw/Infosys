@@ -16,7 +16,7 @@ public class MainManager {
     private MainManager() {
     }
 
-    public static MainManager getInstance() {
+    public static synchronized MainManager getInstance() {
         if (instance == null) {
             instance = new MainManager();
         }

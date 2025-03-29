@@ -31,9 +31,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.infosys.R;
 import com.example.infosys.activities.CreatePostActivity;
+import com.example.infosys.activities.PostActivity;
 import com.example.infosys.adapters.PostsViewPagerAdapter;
 import com.example.infosys.enums.Nav;
-import com.example.infosys.fragments.communities.posts.PostFragment;
 import com.example.infosys.fragments.communities.posts.PostListFragment;
 import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.CommunityManager;
@@ -148,13 +148,12 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
     @Override
     public void onResume() {
         super.onResume();
-
         Log.d(TAG, "onResume: Community Fragment");
 
         MaterialToolbar toolbar = requireActivity().findViewById(R.id.app_bar);
         configureToolbar(toolbar);
     }
-    
+
     @Override
     public void configureToolbar(MaterialToolbar toolbar) {
         toolbar.setNavigationIcon(R.drawable.ic_back);
@@ -166,11 +165,7 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
     }
 
     private void openPostInCommunity(String postId) {
-        PostFragment fragment = PostFragment.newInstance(communityId, communityName, postId);
-        MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).beginTransaction()
-                .replace(R.id.communities_nav_container, fragment)
-                .addToBackStack(null)
-                .commitAllowingStateLoss();
+        PostActivity.start(getContext(), postId, communityId, communityName);
     }
 
     private void getProfilePicture(String communityId) {

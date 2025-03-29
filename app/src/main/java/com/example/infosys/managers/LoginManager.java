@@ -60,7 +60,7 @@ public class LoginManager {
                                 if (documentSnapshot.exists()) {
                                     User userData = documentSnapshot.toObject(User.class);
                                     assert userData != null;
-                                    FirebaseUtil.instantiateUserManager(userData.getUid(), userData.getUsername());
+                                    FirebaseUtil.instantiateUserManager(userData.getUid(), userData.getUsername(), userData.getProfilePictureUrl());
 
                                     String username = userData.getUsername();
                                     AndroidUtil.showToast(appContext, "Welcome, " + username);
@@ -85,7 +85,7 @@ public class LoginManager {
                     if (documentSnapshot.exists()) {
                         User userData = documentSnapshot.toObject(User.class);
                         assert userData != null;
-                        FirebaseUtil.instantiateUserManager(userData.getUid(), userData.getUsername());
+                        FirebaseUtil.instantiateUserManager(userData.getUid(), userData.getUsername(), userData.getProfilePictureUrl());
 
                         callback.onLoginSuccess();
                     } else {

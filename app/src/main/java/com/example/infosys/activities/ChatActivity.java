@@ -82,7 +82,7 @@ public class ChatActivity extends AppCompatActivity {
     private void initialiseUI() {
         toolbar = findViewById(R.id.app_bar);
         inputMessage = findViewById(R.id.input_message);
-        sendButton = findViewById(R.id.send_button);
+        sendButton = findViewById(R.id.comment_send_button);
 
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle(friendName);

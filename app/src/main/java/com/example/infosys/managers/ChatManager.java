@@ -23,7 +23,7 @@ public class ChatManager {
         db = FirebaseFirestore.getInstance();
     }
 
-    public static ChatManager getInstance() {
+    public static synchronized ChatManager getInstance() {
         if (instance == null) {
             instance = new ChatManager();
         }

@@ -1,6 +1,7 @@
 package com.example.infosys.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,8 +18,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
 import com.example.infosys.R;
-import com.example.infosys.fragments.communities.posts.PostFragment;
+import com.example.infosys.activities.PostActivity;
+import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Post;
 import com.example.infosys.utils.FirebaseUtil;
 
@@ -56,12 +59,23 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
         holder.timestamp.setText(FirebaseUtil.timestampToString(post.getDateCreated()));
         holder.content.setText(post.getBody());
         holder.container.setOnClickListener(v -> {
-            PostFragment fragment = PostFragment.newInstance(communityId, communityName, post.getUid());
-            fragmentManager.beginTransaction()
-                    .replace(R.id.communities_nav_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
+            Context context = holder.container.getContext();
+            PostActivity.start(context, post.getUid(), communityId, communityName);
         });
+
+        UserManager.getInstance().getUserProfilePictureUrl(post.getAuthorId())
+                .addOnSuccessListener(url -> {
+                    Glide.with(holder.itemView.getContext())
+                            .load(url)
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .circleCrop()
+                            .into(holder.profileImage);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "onBindViewHolder: Failed to load profile picture", e);
+                    holder.profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                });
+
         setupImageCarousel(holder, post.getImageUrls());
     }
 
@@ -87,6 +101,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
         }
         RecyclerView internalRecyclerView = (RecyclerView) holder.imageCarousel.getChildAt(0);
 
+        // Fix vertical scroll inside nested ViewPager (image carousel)
+        holder.imageCarousel.setNestedScrollingEnabled(false);
+        holder.imageCarousel.getChildAt(0).setNestedScrollingEnabled(false);
 
         internalRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             float startX = 0f;
@@ -95,6 +112,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         startX = event.getX();
@@ -116,6 +134,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
 
                             Log.d(TAG, "onTouch: " + holder.container.performClick());
                         }
+
                         break;
 
                     case MotionEvent.ACTION_MOVE:
@@ -124,7 +143,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
                         v.getParent().requestDisallowInterceptTouchEvent(moveDx > moveDy);
                         break;
                 }
-                return false; // Let ViewPager2 still handle swiping
+                return false;
             }
         });
 

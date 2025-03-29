@@ -92,6 +92,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/post_content">
 
+            
             <!-- Image Preview Carousel -->
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/image_carousel"

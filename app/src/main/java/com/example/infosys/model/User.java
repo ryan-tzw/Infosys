@@ -11,6 +11,10 @@ public class User implements Serializable {
     private String email;
     private List<User> friendsList;
     private List<String> communitiesList;
+    private String profilePictureUrl;
+
+    public User() {
+    }
 
     public User(String uid, String username, String email) {
         this.uid = uid;
@@ -18,9 +22,7 @@ public class User implements Serializable {
         this.email = email;
         this.friendsList = new ArrayList<>();
         this.communitiesList = new ArrayList<>();
-    }
-
-    public User() {
+        this.profilePictureUrl = "";
     }
 
     public String getUid() {
@@ -41,6 +43,10 @@ public class User implements Serializable {
 
     public List<String> getCommunitiesList() {
         return communitiesList;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
     }
 
     public void addFriend(User friend) {
