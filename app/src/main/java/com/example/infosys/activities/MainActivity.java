@@ -10,20 +10,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.infosys.R;
+import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.communities.CommunityFragment;
-import com.example.infosys.fragments.main.CommunitiesFragment;
 import com.example.infosys.fragments.main.FriendsFragment;
 import com.example.infosys.fragments.main.HomeFragment;
 import com.example.infosys.fragments.main.NotificationsFragment;
 import com.example.infosys.fragments.main.ProfileFragment;
+import com.example.infosys.fragments.main.nav.NavCommunitiesFragment;
+import com.example.infosys.interfaces.ToolbarConfigurable;
+import com.example.infosys.managers.MainManager;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,10 +36,13 @@ public class MainActivity extends AppCompatActivity {
     private Fragment homeFragment, communitiesFragment, notificationsFragment, friendsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        MainManager.getInstance().setMainActivity(this);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         MaterialToolbar topAppBar = findViewById(R.id.app_bar);
@@ -56,6 +63,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        MaterialToolbar toolbar = findViewById(R.id.app_bar);
+
+        FragmentManager fm = getSelectedTabFM();
+        Fragment visibleChild = getTopFragmentOf(fm);
+
+        Log.d(TAG, "onResume: visibleChild: " + visibleChild);
+
+        if (visibleChild instanceof ToolbarConfigurable) {
+            Log.d(TAG, "onResume: ToolbarConfigurable" + visibleChild);
+            ((ToolbarConfigurable) visibleChild).configureToolbar(toolbar);
+        }
+    }
+
+    private FragmentManager getSelectedTabFM() {
+        int selectedItemId = bottomNavigationView.getSelectedItemId();
+
+        if (selectedItemId == R.id.nav_home)
+            return MainManager.getInstance().getNavFragmentManager(Nav.HOME);
+        if (selectedItemId == R.id.nav_communities)
+            return MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES);
+
+        return null;
+    }
+
+    private Fragment getTopFragmentOf(FragmentManager fm) {
+        if (fm != null) {
+            List<Fragment> childFragments = fm.getFragments();
+            for (int i = childFragments.size() - 1; i >= 0; i--) {
+                Fragment child = childFragments.get(i);
+                if (child != null && child.isVisible()) {
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
+
+
     private void initialiseAppBar(MaterialToolbar appbar) {
         setSupportActionBar(appbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
@@ -64,46 +113,43 @@ public class MainActivity extends AppCompatActivity {
     private void initialiseFragments() {
         profileFragment = new ProfileFragment();
         homeFragment = new HomeFragment();
-        communitiesFragment = new CommunitiesFragment();
+        communitiesFragment = new NavCommunitiesFragment();
         notificationsFragment = new NotificationsFragment();
         friendsFragment = new FriendsFragment();
         activeFragment = homeFragment;
 
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container_view, profileFragment, "5").hide(profileFragment)
-                .add(R.id.fragment_container_view, notificationsFragment, "4").hide(notificationsFragment)
-                .add(R.id.fragment_container_view, friendsFragment, "3").hide(friendsFragment)
-                .add(R.id.fragment_container_view, communitiesFragment, "2").hide(communitiesFragment)
-                .add(R.id.fragment_container_view, homeFragment, "1")
+                .add(R.id.fragment_container_view, profileFragment, "PROFILE").hide(profileFragment)
+                .add(R.id.fragment_container_view, notificationsFragment, "NOTIFICATIONS").hide(notificationsFragment)
+                .add(R.id.fragment_container_view, friendsFragment, "FRIENDS").hide(friendsFragment)
+                .add(R.id.fragment_container_view, communitiesFragment, "COMMUNITIES").hide(communitiesFragment)
+                .add(R.id.fragment_container_view, homeFragment, "HOME")
                 .commit();
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                getSupportFragmentManager().popBackStack();
-            }
-
             if (item.getItemId() == R.id.nav_home) {
-                transaction.hide(activeFragment).show(homeFragment);
-                activeFragment = homeFragment;
+                switchFragment(homeFragment);
             } else if (item.getItemId() == R.id.nav_communities) {
-                transaction.hide(activeFragment).show(communitiesFragment);
-                activeFragment = communitiesFragment;
+                switchFragment(communitiesFragment);
             } else if (item.getItemId() == R.id.nav_notifications) {
-                transaction.hide(activeFragment).show(notificationsFragment);
-                activeFragment = notificationsFragment;
+                switchFragment(notificationsFragment);
             } else if (item.getItemId() == R.id.nav_chats) {
-                transaction.hide(activeFragment).show(friendsFragment);
-                activeFragment = friendsFragment;
+                switchFragment(friendsFragment);
             } else if (item.getItemId() == R.id.nav_profile) {
-                transaction.hide(activeFragment).show(profileFragment);
-                activeFragment = profileFragment;
+                switchFragment(profileFragment);
             }
-
-            transaction.commit();
             return true;
         });
+    }
+
+    private void switchFragment(Fragment targetFragment) {
+        if (activeFragment != targetFragment) {
+            getSupportFragmentManager().beginTransaction()
+                    .hide(activeFragment)
+                    .show(targetFragment)
+                    .commit();
+            activeFragment = targetFragment;
+        }
     }
 
     @Override

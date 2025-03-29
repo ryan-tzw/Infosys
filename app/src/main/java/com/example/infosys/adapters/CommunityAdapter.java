@@ -45,7 +45,7 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.Comm
         holder.itemView.setOnClickListener(v -> {
             CommunityFragment fragment = CommunityFragment.newInstance(community.getId());
             fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container_view, fragment)
+                    .replace(R.id.communities_nav_container, fragment)
                     .addToBackStack(null)
                     .commit();
         });

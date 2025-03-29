@@ -15,7 +15,6 @@ import java.util.List;
 public class PostsManager {
     private static final String TAG = "PostManager";
     private static final int PAGE_SIZE = 10;
-    private static PostsManager instance;
     private final FirebaseFirestore db;
     private final String communityId;
 
@@ -27,7 +26,7 @@ public class PostsManager {
     public Task<Post> getPost(String postId) {
         Log.d(TAG, "getPost: Retrieving post: " + postId);
         return db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection(Collections.POSTS).document(postId)
+                .collection(Collections.Communities.POSTS).document(postId)
                 .get()
                 .continueWith(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
@@ -39,7 +38,7 @@ public class PostsManager {
 
     public void getPosts(OnPostsRetrieved callback) {
         db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection(Collections.POSTS).get()
+                .collection(Collections.Communities.POSTS).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     callback.onPostsRetrieved(queryDocumentSnapshots.toObjects(Post.class));
                 })
@@ -53,7 +52,7 @@ public class PostsManager {
 
         assert field != null;
         Query query = db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection(Collections.POSTS)
+                .collection(Collections.Communities.POSTS)
                 .orderBy(field, Query.Direction.DESCENDING)
                 .limit(PAGE_SIZE);
 
@@ -74,7 +73,7 @@ public class PostsManager {
     public Task<String> createPost(Post post) {
         Log.d(TAG, "createPost: Creating post: " + post);
         return db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection(Collections.POSTS).document(post.getUid())
+                .collection(Collections.Communities.POSTS).document(post.getUid())
                 .set(post)
                 .continueWith(task -> {
                     if (task.isSuccessful()) {

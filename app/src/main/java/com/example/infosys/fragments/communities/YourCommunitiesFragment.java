@@ -14,7 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.infosys.R;
 import com.example.infosys.activities.CreateCommunityActivity;
 import com.example.infosys.adapters.CommunityAdapter;
+import com.example.infosys.enums.Nav;
 import com.example.infosys.managers.CommunitiesManager;
+import com.example.infosys.managers.MainManager;
 import com.example.infosys.model.Community;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
@@ -69,7 +71,7 @@ public class YourCommunitiesFragment extends Fragment {
         AndroidUtil.setupDivider(view, recyclerView);
 
         List<Community> communities = new ArrayList<>();
-        CommunityAdapter adapter = new CommunityAdapter(communities, requireActivity().getSupportFragmentManager());
+        CommunityAdapter adapter = new CommunityAdapter(communities, MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
         recyclerView.setAdapter(adapter);
 
         String userId = FirebaseUtil.getCurrentUserUid();

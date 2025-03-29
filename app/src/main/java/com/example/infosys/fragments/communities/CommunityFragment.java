@@ -7,6 +7,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -14,19 +17,27 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.MenuHost;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.infosys.R;
 import com.example.infosys.activities.CreatePostActivity;
 import com.example.infosys.adapters.PostsViewPagerAdapter;
+import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.communities.posts.PostFragment;
 import com.example.infosys.fragments.communities.posts.PostListFragment;
+import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.CommunityManager;
+import com.example.infosys.managers.MainManager;
 import com.example.infosys.model.Community;
 import com.example.infosys.utils.AndroidUtil;
 import com.google.android.gms.tasks.Task;
@@ -41,7 +52,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 /*
  This fragment displays individual communities
  */
-public class CommunityFragment extends Fragment {
+public class CommunityFragment extends Fragment implements ToolbarConfigurable, MenuProvider {
     private static final String TAG = "CommunityFragment";
     private static final String ARG_COMMUNITY_ID = "communityId";
     CircularProgressIndicator progressIndicator;
@@ -53,6 +64,7 @@ public class CommunityFragment extends Fragment {
     private MaterialButton joinButton;
     private FloatingActionButton floatingActionButton;
     private ActivityResultLauncher<Intent> createPostLauncher;
+    private ViewPager2 viewPager;
 
     public CommunityFragment() {
         // Required empty public constructor
@@ -73,6 +85,7 @@ public class CommunityFragment extends Fragment {
             communityId = getArguments().getString(ARG_COMMUNITY_ID);
         }
 
+
         createPostLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -82,10 +95,10 @@ public class CommunityFragment extends Fragment {
                             String postId = data.getStringExtra("postId");
 
                             // Clear the cached posts so they reload
-                            FragmentManager fm = getChildFragmentManager(); // or getParentFragmentManager if needed
+                            FragmentManager fm = getChildFragmentManager();
                             for (Fragment fragment : fm.getFragments()) {
                                 if (fragment instanceof PostListFragment) {
-                                    ((PostListFragment) fragment).refreshPosts(); // implement this below
+                                    ((PostListFragment) fragment).refreshPosts();
                                 }
                             }
 
@@ -101,6 +114,7 @@ public class CommunityFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_community, container, false);
 
         instantiateViews(view);
+        hideScreen();
         retrieveCommunityData(view);
 
         floatingActionButton.setOnClickListener(v -> {
@@ -109,26 +123,54 @@ public class CommunityFragment extends Fragment {
             createPostLauncher.launch(intent);
         });
 
+        viewPager.setUserInputEnabled(false);
+
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.community_menu, menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        Log.d(TAG, "onResume: Community Fragment");
+
         MaterialToolbar toolbar = requireActivity().findViewById(R.id.app_bar);
+        configureToolbar(toolbar);
+    }
+    
+    @Override
+    public void configureToolbar(MaterialToolbar toolbar) {
         toolbar.setNavigationIcon(R.drawable.ic_back);
         toolbar.setNavigationOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().popBackStack();
+            toolbar.post(() -> {
+                MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).popBackStack();
+            });
         });
     }
 
     private void openPostInCommunity(String postId) {
         PostFragment fragment = PostFragment.newInstance(communityId, communityName, postId);
-        requireActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container_view, fragment)
+        MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).beginTransaction()
+                .replace(R.id.communities_nav_container, fragment)
                 .addToBackStack(null)
-                .commit();
+                .commitAllowingStateLoss();
     }
 
     private void getProfilePicture(String communityId) {
@@ -161,6 +203,11 @@ public class CommunityFragment extends Fragment {
     private void showScreen() {
         progressIndicator.setVisibility(View.GONE);
         rootContainer.setVisibility(View.VISIBLE);
+    }
+
+    private void hideScreen() {
+        progressIndicator.setVisibility(View.VISIBLE);
+        rootContainer.setVisibility(View.GONE);
     }
 
     private void updateMemberCountDisplay() {
@@ -221,6 +268,7 @@ public class CommunityFragment extends Fragment {
         progressIndicator = view.findViewById(R.id.progress_indicator);
         rootContainer = view.findViewById(R.id.root_container);
         floatingActionButton = view.findViewById(R.id.fab_create_post);
+        viewPager = view.findViewById(R.id.view_pager);
     }
 
     private void setJoinButton(boolean isMember) {

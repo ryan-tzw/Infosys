@@ -12,7 +12,6 @@ import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.fragment.app.Fragment;
 
 import com.example.infosys.R;
 import com.example.infosys.utils.AndroidUtil;
@@ -23,11 +22,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ProfileFragment extends BaseFragment {
     private static final String TAG = "ProfileFragment";
     private ActivityResultLauncher<Intent> imagePickerLauncher;
@@ -107,11 +101,6 @@ public class ProfileFragment extends BaseFragment {
                     progressIndicator.setVisibility(View.GONE);
                     AndroidUtil.showToast(getContext(), "Failed to upload image");
                     Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
-                })
-                .addOnProgressListener(taskSnapshot -> {
-                    double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                    progressIndicator.setProgressCompat((int) progress, true);
-                    Log.d(TAG, "uploadImageToFirebase: Upload progress: " + progress + "%");
                 });
     }
 

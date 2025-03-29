@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -14,12 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.infosys.R;
 import com.example.infosys.adapters.PostsAdapter;
+import com.example.infosys.enums.Nav;
 import com.example.infosys.enums.SortType;
+import com.example.infosys.managers.MainManager;
 import com.example.infosys.managers.PostsManager;
 import com.example.infosys.model.Post;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.viewmodels.PostListViewModel;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +42,11 @@ public class PostListFragment extends Fragment {
     private SortType sortType;
     private boolean isLoading = false;
     private boolean isLastPage = false;
-    private DocumentSnapshot lastVisiblePost = null;
+    private boolean initialLoadComplete = false;
     private List<Post> postsList;
     private PostsAdapter adapter;
     private PostListViewModel viewModel;
+    private TextView emptyListNotification;
 
     public PostListFragment() {
         // Required empty public constructor
@@ -81,6 +84,12 @@ public class PostListFragment extends Fragment {
             postsList.clear();
             postsList.addAll(posts);
             adapter.notifyDataSetChanged();
+
+            if (initialLoadComplete) {
+                emptyListNotification.setVisibility(posts.isEmpty() ? View.VISIBLE : View.GONE);
+            } else {
+                emptyListNotification.setVisibility(View.GONE);
+            }
         });
         setupPosts(view);
         return view;
@@ -99,17 +108,19 @@ public class PostListFragment extends Fragment {
         viewModel.clearPosts();
         viewModel.setIsLastPage(false);
         viewModel.setLastVisibleSnapshot(null);
-        loadMorePosts(); // trigger the reload
+        loadMorePosts();
     }
 
 
     private void setupPosts(View view) {
+        emptyListNotification = view.findViewById(R.id.empty_recycler_view_text);
+
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         AndroidUtil.setupDivider(view, recyclerView);
 
         postsList = new ArrayList<>();
-        adapter = new PostsAdapter(postsList, communityId, communityName, requireActivity().getSupportFragmentManager());
+        adapter = new PostsAdapter(postsList, communityId, communityName, MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
         recyclerView.setAdapter(adapter);
 
         loadMorePosts();
@@ -151,6 +162,14 @@ public class PostListFragment extends Fragment {
                     }
 
                     isLoading = false;
+
+
+                    if (!initialLoadComplete) {
+                        initialLoadComplete = true;
+                        if (viewModel.getPosts().getValue() != null && viewModel.getPosts().getValue().isEmpty()) {
+                            emptyListNotification.setVisibility(View.VISIBLE);
+                        }
+                    }
                 }
         );
     }

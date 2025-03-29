@@ -1,9 +1,12 @@
 package com.example.infosys.managers;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class UserManager {
     private static UserManager instance;
     private String userId;
     private String userName;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private UserManager() {
     }
@@ -32,4 +35,6 @@ public class UserManager {
         this.userId = null;
         this.userName = null;
     }
+
+
 }

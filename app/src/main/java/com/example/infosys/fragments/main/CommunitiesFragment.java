@@ -1,6 +1,7 @@
 package com.example.infosys.fragments.main;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,13 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class CommunitiesFragment extends BaseFragment {
+    private static final String TAG = "CommunitiesFragment";
 
     public CommunitiesFragment() {
         // Required empty public constructor
     }
 
-    public static CommunitiesFragment newInstance(String param1, String param2) {
+    public static CommunitiesFragment newInstance() {
         CommunitiesFragment fragment = new CommunitiesFragment();
         Bundle args = new Bundle();
         return fragment;
@@ -56,5 +58,11 @@ public class CommunitiesFragment extends BaseFragment {
         }).attach();
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
     }
 }

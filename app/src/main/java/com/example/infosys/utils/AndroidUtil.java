@@ -8,11 +8,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.infosys.R;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
 
 public class AndroidUtil {
@@ -50,9 +52,12 @@ public class AndroidUtil {
         recyclerView.addItemDecoration(divider);
     }
 
-    public static void loadProfilePicture(Context context, Uri imageUri, ImageView imageView) {
+    public static void loadProfilePicture(Context context, @Nullable Uri imageUri, ImageView imageView) {
         Glide.with(context)
                 .load(imageUri)
+                .placeholder(R.drawable.logo)
+                .error(R.drawable.logo)
+                .fallback(R.drawable.logo)
                 .apply(RequestOptions.circleCropTransform())
                 .into(imageView);
     }

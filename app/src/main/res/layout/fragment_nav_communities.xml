@@ -1,0 +1,5 @@
+<!-- res/layout/fragment_communities_nav.xml -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/communities_nav_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />

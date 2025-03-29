@@ -10,18 +10,18 @@
         android:id="@+id/root_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="20dp">
+            android:layout_height="wrap_content">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/community_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="20dp"
                 app:layout_scrollFlags="scroll|enterAlways">
 
                 <ImageView
@@ -105,7 +105,7 @@
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
+            android:paddingHorizontal="12dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -115,7 +115,7 @@
             android:layout_gravity="end|bottom"
             android:layout_margin="16dp"
             android:contentDescription="@string/add_a_post_to_the_community"
-            android:src="@drawable/ic_add" />
+            android:src="@drawable/ic_add_post" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

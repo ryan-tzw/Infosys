@@ -79,7 +79,7 @@ public class FirebaseUtil {
         userManager.setUserData(userId, userName);
     }
 
-    public void addUserToFirestore(String uid, String username, String email) {
+    public static void addUserToFirestore(String uid, String username, String email) {
         User newUser = new User(uid, username, email);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 

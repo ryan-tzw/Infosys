@@ -56,4 +56,7 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.imagepicker)
     implementation(libs.viewpager2)
+    implementation(libs.android.image.picker)
+    implementation(libs.circleindicator)
+
 }

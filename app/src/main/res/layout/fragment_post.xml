@@ -134,6 +134,43 @@
                         android:text="@string/lipsum"
                         app:layout_constraintTop_toBottomOf="@id/post_details_layout" />
 
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/image_carousel_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/body">
+
+                        <!-- Image Preview Carousel -->
+                        <androidx.viewpager2.widget.ViewPager2
+                            android:id="@+id/image_carousel"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_margin="0dp"
+                            android:orientation="horizontal"
+                            app:layout_constraintDimensionRatio="1:1"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <me.relex.circleindicator.CircleIndicator3
+                            android:id="@+id/image_carousel_indicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
+                            android:background="@drawable/translucent_circle"
+                            android:backgroundTint="@color/black"
+                            android:paddingHorizontal="4dp"
+                            app:ci_drawable="@drawable/translucent_circle"
+                            app:layout_constraintBottom_toBottomOf="@id/image_carousel"
+                            app:layout_constraintEnd_toEndOf="@id/image_carousel"
+                            app:layout_constraintStart_toStartOf="@id/image_carousel" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
                     <LinearLayout
                         android:id="@+id/like_dislike_container"
                         android:layout_width="wrap_content"
@@ -142,11 +179,11 @@
                         android:background="@drawable/circle_outline"
                         android:orientation="horizontal"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/body">
+                        app:layout_constraintTop_toBottomOf="@id/image_carousel_container">
 
                         <LinearLayout
                             android:id="@+id/like_container"
-                            android:layout_width="wrap_content"
+                            android:layout_width="60dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
                             android:paddingHorizontal="12dp"
@@ -180,7 +217,7 @@
 
                         <LinearLayout
                             android:id="@+id/dislike_container"
-                            android:layout_width="wrap_content"
+                            android:layout_width="60dp"
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
                             android:paddingHorizontal="12dp"
@@ -210,10 +247,11 @@
 
                     <LinearLayout
                         android:id="@+id/comments_container"
-                        android:layout_width="wrap_content"
+                        android:layout_width="60dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:background="@drawable/circle_outline"
+                        android:gravity="center"
                         android:orientation="horizontal"
                         android:paddingHorizontal="12dp"
                         android:paddingVertical="2dp"
