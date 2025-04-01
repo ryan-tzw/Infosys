@@ -31,10 +31,11 @@ public class ChatManager {
 
     public Task<String> createChat(String userId, List<String> participants) {
         String chatId = UUID.randomUUID().toString();
+
+        participants.add(userId);
         boolean isGroupChat = participants.size() > 2;
 
         Chat chat = new Chat(chatId, participants, isGroupChat, Timestamp.now());
-        chat.addParticipant(userId);
 
         if (isGroupChat) chat.setGroupName("New Group Chat");
 

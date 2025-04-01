@@ -47,7 +47,7 @@ public class NavFragment extends Fragment {
                 case "NOTIFICATIONS":
                     fragment = new NotificationsFragment();
                     break;
-                case "FRIENDS":
+                case "CHATS":
                     fragment = new ChatsFragment();
                     break;
                 case "PROFILE":

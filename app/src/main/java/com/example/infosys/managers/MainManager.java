@@ -27,6 +27,10 @@ public class MainManager {
         this.mainActivity = mainActivity;
     }
 
+    public FragmentManager getMainFragmentManager() {
+        return mainActivity.getSupportFragmentManager();
+    }
+
     public FragmentManager getNavFragmentManager(Nav fragmentType) {
         Fragment navFragment = mainActivity.getSupportFragmentManager().findFragmentByTag(fragmentType.toString());
         Log.d(TAG, "getFragmentManager: Getting fragment: " + fragmentType);

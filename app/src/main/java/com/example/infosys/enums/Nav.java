@@ -4,6 +4,6 @@ public enum Nav {
     HOME,
     COMMUNITIES,
     NOTIFICATIONS,
-    FRIENDS,
+    CHATS,
     PROFILE
 }

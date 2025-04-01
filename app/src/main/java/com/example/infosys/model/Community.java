@@ -12,6 +12,7 @@ public class Community {
     private boolean isPrivate;
     private List<String> adminIds;
     private String ownerId;
+    private List<String> bannedUserIds;
 
     public Community() {
         // Required empty public constructor for Firestore
@@ -27,6 +28,7 @@ public class Community {
         this.isPrivate = false;
         this.adminIds = new ArrayList<>();
         this.ownerId = null;
+        this.bannedUserIds = new ArrayList<>();
     }
 
     public String getId() {
@@ -95,5 +97,9 @@ public class Community {
 
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public List<String> getBannedUserIds() {
+        return bannedUserIds;
     }
 }

@@ -137,11 +137,14 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.community_menu, menu);
+        menuInflater.inflate(R.menu.community, menu);
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        if (menuItem.getItemId() == R.id.manage_button) {
+            // TODO implement banning
+        }
         return false;
     }
 

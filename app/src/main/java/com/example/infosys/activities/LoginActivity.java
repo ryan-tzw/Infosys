@@ -79,6 +79,7 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
         isAuthCheckComplete = true;
         Log.d(TAG, "onLoginSuccess: Login successful!");
         AndroidUtil.navigateTo(LoginActivity.this, MainActivity.class);
+        finish();
     }
 
     @Override

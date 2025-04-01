@@ -28,10 +28,9 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    private Fragment homeFragment, communitiesFragment, notificationsFragment, friendsFragment, profileFragment, activeFragment;
+    MaterialToolbar topAppBar;
+    private Fragment homeFragment, communitiesFragment, notificationsFragment, chatsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         MainManager.getInstance().setMainActivity(this);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        MaterialToolbar topAppBar = findViewById(R.id.app_bar);
+        topAppBar = findViewById(R.id.app_bar);
 
         overrideBackButton();
 
@@ -111,34 +110,34 @@ public class MainActivity extends AppCompatActivity {
         homeFragment = NavFragment.newInstance(Nav.HOME);
         communitiesFragment = NavFragment.newInstance(Nav.COMMUNITIES);
         notificationsFragment = NavFragment.newInstance(Nav.NOTIFICATIONS);
-        friendsFragment = NavFragment.newInstance(Nav.FRIENDS);
+        chatsFragment = NavFragment.newInstance(Nav.CHATS);
         activeFragment = homeFragment;
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_container_view, profileFragment, "PROFILE").hide(profileFragment)
                 .add(R.id.fragment_container_view, notificationsFragment, "NOTIFICATIONS").hide(notificationsFragment)
-                .add(R.id.fragment_container_view, friendsFragment, "FRIENDS").hide(friendsFragment)
+                .add(R.id.fragment_container_view, chatsFragment, "CHATS").hide(chatsFragment)
                 .add(R.id.fragment_container_view, communitiesFragment, "COMMUNITIES").hide(communitiesFragment)
                 .add(R.id.fragment_container_view, homeFragment, "HOME")
                 .commit();
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_home) {
-                switchFragment(homeFragment);
+                switchFragment(homeFragment, R.menu.home);
             } else if (item.getItemId() == R.id.nav_communities) {
-                switchFragment(communitiesFragment);
+                switchFragment(communitiesFragment, R.menu.communities);
             } else if (item.getItemId() == R.id.nav_notifications) {
-                switchFragment(notificationsFragment);
+                switchFragment(notificationsFragment, R.menu.notifications);
             } else if (item.getItemId() == R.id.nav_chats) {
-                switchFragment(friendsFragment);
+                switchFragment(chatsFragment, R.menu.chats);
             } else if (item.getItemId() == R.id.nav_profile) {
-                switchFragment(profileFragment);
+                switchFragment(profileFragment, R.menu.profile);
             }
             return true;
         });
     }
 
-    private void switchFragment(Fragment targetFragment) {
+    private void switchFragment(Fragment targetFragment, int menuResId) {
         if (activeFragment != targetFragment) {
             getSupportFragmentManager().beginTransaction()
                     .hide(activeFragment)
@@ -146,7 +145,16 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
             activeFragment = targetFragment;
         }
+
+        inflateMenu(menuResId);
     }
+
+    private void inflateMenu(int menuResId) {
+        topAppBar.getMenu().clear();
+        topAppBar.inflateMenu(R.menu.top_app_bar);
+        topAppBar.inflateMenu(menuResId);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -182,5 +190,4 @@ public class MainActivity extends AppCompatActivity {
 
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
-
 }

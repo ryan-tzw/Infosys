@@ -21,7 +21,7 @@ public class Chat {
         this.participants = participants;
         this.lastMessage = "";
         this.lastUpdated = lastUpdated;
-        this.isGroupChat = false;
+        this.isGroupChat = isGroupChat;
         this.groupName = "";
         this.groupChatImageUrl = "";
     }

@@ -16,7 +16,6 @@ import com.example.infosys.R;
 import com.example.infosys.activities.ChatActivity;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
-import com.example.infosys.utils.FirebaseUtil;
 
 import java.util.List;
 
@@ -62,16 +61,20 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
         if (chat.getGroupChatImageUrl() != null && !chat.getGroupChatImageUrl().isEmpty()) {
             Glide.with(holder.chatImage.getContext())
                     .load(chat.getGroupChatImageUrl())
-                    .placeholder(R.drawable.ic_launcher_background) // Placeholder for image
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .circleCrop()
                     .into(holder.chatImage);
         } else {
             // Default image if no group image URL exists
-            holder.chatImage.setImageResource(R.drawable.ic_launcher_background);
+            Glide.with(holder.chatImage.getContext())
+                    .load(R.drawable.ic_launcher_background)
+                    .circleCrop()
+                    .into(holder.chatImage);
         }
     }
 
     private void setupDMChat(Chat chat, ChatViewHolder holder) {
-        String friendId = getFriendId(chat);
+        String friendId = UserManager.getInstance().getFriendId(chat);
         UserManager.getInstance().getUser(friendId)
                 .addOnSuccessListener(friend -> {
                     holder.chatName.setText(friend.getUsername());
@@ -92,15 +95,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
                 });
     }
 
-    private String getFriendId(Chat chat) {
-        for (String participantId : chat.getParticipants()) {
-            Log.d(TAG, "getFriendId: Participant id: " + participantId);
-            if (!participantId.equals(FirebaseUtil.getCurrentUserUid())) {
-                return participantId;
-            }
-        }
-        return null;
-    }
 
     @Override
     public int getItemCount() {

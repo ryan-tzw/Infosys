@@ -1,11 +1,20 @@
 package com.example.infosys.managers;
 
+import android.util.Log;
+
 import com.example.infosys.constants.Collections;
+import com.example.infosys.model.Chat;
 import com.example.infosys.model.User;
+import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserManager {
+    private static final String TAG = "UserManager";
     private static UserManager instance;
     private String userId, userName, userProfilePictureUrl;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -43,6 +52,48 @@ public class UserManager {
                     }
                 });
     }
+
+    public Task<List<User>> searchUsers(String queryText) {
+        Log.d(TAG, "searchUsers: Searching for user with query: " + queryText);
+        return db.collection(Collections.USERS)
+                .orderBy("usernameLowercase")
+                .startAt(queryText.toLowerCase())
+                .endAt(queryText + "\uf8ff")
+                .limit(20)
+                .get()
+                .continueWith(task -> {
+                    Log.d(TAG, "searchUsers: Task completed");
+                    List<User> resultList = new ArrayList<>();
+
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Log.d(TAG, "searchUsers: Task successful");
+                        Log.d(TAG, "searchUsers: Number of documents found: " + task.getResult().size());
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            Log.d(TAG, "searchUsers: Document found: " + doc.getId());
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                resultList.add(user);
+                            }
+                        }
+                    }
+                    return resultList;
+                });
+    }
+
+    public String getFriendId(Chat chat) {
+        if (chat.isGroupChat()) {
+            Log.e(TAG, "getFriendId: Can't call getFriendId on group chat");
+            return null;
+        }
+        for (String participantId : chat.getParticipants()) {
+            Log.d(TAG, "getFriendId: Participant id: " + participantId);
+            if (!participantId.equals(FirebaseUtil.getCurrentUserUid())) {
+                return participantId;
+            }
+        }
+        return null;
+    }
+
 
     /*
      Functions for the current user data

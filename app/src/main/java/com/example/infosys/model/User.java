@@ -8,6 +8,7 @@ import java.util.Objects;
 public class User implements Serializable {
     private String uid;
     private String username;
+    private String usernameLowercase;
     private String email;
     private List<User> friendsList;
     private List<String> communitiesList;
@@ -19,10 +20,15 @@ public class User implements Serializable {
     public User(String uid, String username, String email) {
         this.uid = uid;
         this.username = username;
+        this.usernameLowercase = username.toLowerCase();
         this.email = email;
         this.friendsList = new ArrayList<>();
         this.communitiesList = new ArrayList<>();
         this.profilePictureUrl = "";
+    }
+
+    public String getUsernameLowercase() {
+        return usernameLowercase;
     }
 
     public String getUid() {

@@ -5,12 +5,17 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +23,7 @@ import com.example.infosys.R;
 import com.example.infosys.adapters.MessagesAdapter;
 import com.example.infosys.managers.ChatManager;
 import com.example.infosys.managers.MessagesManager;
+import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
 import com.example.infosys.model.Message;
 import com.example.infosys.utils.FirebaseUtil;
@@ -54,6 +60,20 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_chat);
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+            int extraPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+            int bottomPadding = Math.max(imeInsets.bottom, navInsets.bottom) + extraPadding;
+
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottomPadding);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         initialiseData();
         initialiseUI();
@@ -206,13 +226,30 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
+
+        recyclerView.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    if (oldBottom != 0 && bottom != 0 && oldBottom > bottom) {
+                        messageRecyclerView.smoothScrollToPosition(0);
+                    }
+                });
     }
 
     private void populateData(Chat chat) {
-        groupName = chat.getGroupName();
-        groupChatImageUrl = chat.getGroupChatImageUrl();
-
-        Objects.requireNonNull(getSupportActionBar()).setTitle(groupName);
+        if (chat.isGroupChat()) {
+            groupName = chat.getGroupName();
+            Objects.requireNonNull(getSupportActionBar()).setTitle(groupName);
+        } else {
+            String friendId = UserManager.getInstance().getFriendId(chat);
+            UserManager.getInstance().getUser(friendId)
+                    .addOnSuccessListener(friend -> {
+                        Objects.requireNonNull(getSupportActionBar()).setTitle(friend.getUsername());
+                    })
+                    .addOnFailureListener(e -> {
+                        Objects.requireNonNull(getSupportActionBar()).setTitle("Unknown user");
+                        Log.e(TAG, "onBindViewHolder: Failed to get friend id", e);
+                    });
+        }
     }
 
     private boolean isUserAtBottom() {
