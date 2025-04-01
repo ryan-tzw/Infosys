@@ -12,6 +12,9 @@ import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
+/**
+ * PostsManager is responsible for managing lists of posts in a community.
+ */
 public class PostsManager {
     private static final String TAG = "PostManager";
     private static final int PAGE_SIZE = 10;
@@ -50,7 +53,6 @@ public class PostsManager {
     public void getPaginatedSortedPosts(SortType sortType, DocumentSnapshot lastVisiblePost, OnPaginatedPostsRetrieved callback) {
         String field = getSortField(sortType);
 
-        assert field != null;
         Query query = db.collection(Collections.COMMUNITIES).document(communityId)
                 .collection(Collections.Communities.POSTS)
                 .orderBy(field, Query.Direction.DESCENDING)
@@ -93,7 +95,7 @@ public class PostsManager {
                 return "likesCount";
             default:
                 Log.e(TAG, "getSortField: SortType is invalid.");
-                return null;
+                return "";
         }
     }
 

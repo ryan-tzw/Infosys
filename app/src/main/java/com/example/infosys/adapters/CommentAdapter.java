@@ -20,7 +20,6 @@ import java.util.List;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
     private static final String TAG = "CommentAdapter";
-
     private final List<Comment> commentList;
 
     public CommentAdapter(List<Comment> commentList) {

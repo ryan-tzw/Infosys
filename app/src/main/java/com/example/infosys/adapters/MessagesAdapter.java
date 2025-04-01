@@ -13,11 +13,11 @@ import com.example.infosys.model.Message;
 
 import java.util.List;
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHolder> {
+public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessageViewHolder> {
     private List<Message> messages;
     private String currentUserId;
 
-    public ChatAdapter(List<Message> messages, String currentUserId) {
+    public MessagesAdapter(List<Message> messages, String currentUserId) {
         this.messages = messages;
         this.currentUserId = currentUserId;
     }
@@ -44,6 +44,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
     @Override
     public int getItemCount() {
         return messages.size();
+    }
+
+    public void addMessagesAtEnd(List<Message> newMessages) {
+        int startPosition = messages.size();
+        messages.addAll(newMessages);
+        notifyItemRangeInserted(startPosition, newMessages.size());
     }
 
 

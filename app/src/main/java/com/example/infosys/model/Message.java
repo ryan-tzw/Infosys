@@ -3,6 +3,7 @@ package com.example.infosys.model;
 import com.google.firebase.Timestamp;
 
 public class Message {
+    private String id;
     private String body;
     private String senderId;
     private Timestamp timestamp;
@@ -11,10 +12,15 @@ public class Message {
     public Message() {
     }
 
-    public Message(String body, String senderId, Timestamp timestamp) {
+    public Message(String id, String body, String senderId, Timestamp timestamp) {
+        this.id = id;
         this.body = body;
         this.senderId = senderId;
         this.timestamp = timestamp;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getSenderId() {
@@ -29,4 +35,3 @@ public class Message {
         return timestamp;
     }
 }
-

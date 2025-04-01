@@ -10,25 +10,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.infosys.R;
-import com.example.infosys.adapters.FriendsAdapter;
-import com.example.infosys.managers.FriendsManager;
-import com.example.infosys.model.User;
+import com.example.infosys.adapters.ChatsAdapter;
+import com.example.infosys.fragments.main.common.BaseFragment;
+import com.example.infosys.managers.ChatManager;
+import com.example.infosys.model.Chat;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FriendsFragment extends BaseFragment {
-    private static final String TAG = "FriendsFragment";
-    private FriendsManager friendsManager;
+public class ChatsFragment extends BaseFragment {
+    private static final String TAG = "ChatsFragment";
+    private ChatManager chatManager;
 
-    public FriendsFragment() {
+    public ChatsFragment() {
         // Required empty public constructor
     }
 
-    public static FriendsFragment newInstance(String param1, String param2) {
-        FriendsFragment fragment = new FriendsFragment();
+    public static ChatsFragment newInstance(String param1, String param2) {
+        ChatsFragment fragment = new ChatsFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -37,41 +38,36 @@ public class FriendsFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        friendsManager = FriendsManager.getInstance();
+        chatManager = ChatManager.getInstance();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_friends, container, false);
+        View view = inflater.inflate(R.layout.fragment_chats, container, false);
         setupRecyclerView(view);
         return view;
     }
 
     private void setupRecyclerView(View view) {
-        RecyclerView recyclerView = view.findViewById(R.id.friends_recycler_view);
+        RecyclerView recyclerView = view.findViewById(R.id.chats_recycler_view);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         AndroidUtil.setupDivider(view, recyclerView);
 
-        List<User> friendsList = new ArrayList<>();
-        FriendsAdapter adapter = new FriendsAdapter(friendsList);
+        List<Chat> chatsList = new ArrayList<>();
+        ChatsAdapter adapter = new ChatsAdapter(chatsList);
         recyclerView.setAdapter(adapter);
 
         String currentUserId = FirebaseUtil.getCurrentUserUid();
 
-        friendsManager.getFriendsList(currentUserId, new FriendsManager.FriendsListCallback() {
-            @Override
-            public void onFriendsListReceived(List<User> friends) {
-                friendsList.addAll(friends);
-                Log.d(TAG, "onCreateView: " + friendsList.size());
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "onError: ", e);
-            }
-        });
+        chatManager.getUserChats(currentUserId)
+                .addOnSuccessListener(chats -> {
+                    chatsList.addAll(chats);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "setupRecyclerView: Failed to get user's chats: ", e);
+                });
     }
 }

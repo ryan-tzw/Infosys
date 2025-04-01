@@ -11,6 +11,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -70,7 +71,7 @@ public class PostActivity extends AppCompatActivity {
     private ViewPager2 imageCarousel;
     private ImageCarouselAdapter imageCarouselAdapter;
     private CircleIndicator3 imageCarouselIndicator;
-    private ConstraintLayout imageCarouselContainer;
+    private ConstraintLayout imageCarouselContainer, messageInputLayout;
 
     private LikeStatus likeStatus;
     private int likeCount, dislikeCount, commentCount;
@@ -96,6 +97,9 @@ public class PostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_post);
+
+        instantiateViews();
+        hideScreen();
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -134,7 +138,6 @@ public class PostActivity extends AppCompatActivity {
         postManager = new PostManager(mPostId, mCommunityId);
         commentManager = new CommentManager(mCommunityId, mPostId);
 
-        instantiateViews();
         setupToolbar();
         setupCommentsSection();
         setupSendCommentButton();
@@ -172,6 +175,7 @@ public class PostActivity extends AppCompatActivity {
         // Other
         progressIndicator = findViewById(R.id.progress_indicator);
         rootContainer = findViewById(R.id.root_container);
+        messageInputLayout = findViewById(R.id.message_input_layout);
 
         // Image carousel
         imageCarousel = findViewById(R.id.image_carousel);
@@ -295,18 +299,18 @@ public class PostActivity extends AppCompatActivity {
             }
         });
 
-
         sendCommentButton.setOnClickListener(v -> {
             String text = Objects.requireNonNull(commentInput.getText()).toString().trim();
             if (!text.isEmpty()) {
+                hideKeyboard();
+                commentInput.setText("");
+                sendCommentButton.setEnabled(false);
+
                 commentManager.addComment(text)
                         .addOnSuccessListener(task -> {
-                            commentInput.setText("");
                             txtCommentCount.setText(String.valueOf(commentCount + 1));
-                            sendCommentButton.setEnabled(false);
                         })
                         .addOnFailureListener(e -> {
-                            sendCommentButton.setEnabled(true);
                             Log.e(TAG, "Failed to post comment", e);
                             Toast.makeText(this, "Failed to send comment", Toast.LENGTH_SHORT).show();
                         });
@@ -314,9 +318,23 @@ public class PostActivity extends AppCompatActivity {
         });
     }
 
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(commentInput.getWindowToken(), 0);
+        }
+    }
+
     private void showScreen() {
         progressIndicator.setVisibility(View.GONE);
         rootContainer.setVisibility(View.VISIBLE);
+        messageInputLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void hideScreen() {
+        progressIndicator.setVisibility(View.VISIBLE);
+        rootContainer.setVisibility(View.GONE);
+        messageInputLayout.setVisibility(View.GONE);
     }
 
     /*

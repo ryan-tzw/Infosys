@@ -12,6 +12,9 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/*
+ * PostManager is responsible for managing individual posts in a community.
+ */
 public class PostManager {
     private static final String TAG = "PostManager";
     private final String postId, communityId;

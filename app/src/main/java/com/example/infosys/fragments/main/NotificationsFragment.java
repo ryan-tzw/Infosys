@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.infosys.R;
+import com.example.infosys.fragments.main.common.BaseFragment;
 
 public class NotificationsFragment extends BaseFragment {
 

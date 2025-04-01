@@ -2,21 +2,30 @@ package com.example.infosys.activities;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.infosys.R;
-import com.example.infosys.adapters.ChatAdapter;
+import com.example.infosys.adapters.MessagesAdapter;
 import com.example.infosys.managers.ChatManager;
+import com.example.infosys.managers.MessagesManager;
+import com.example.infosys.model.Chat;
 import com.example.infosys.model.Message;
+import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +36,17 @@ public class ChatActivity extends AppCompatActivity {
     MaterialToolbar toolbar;
     EditText inputMessage;
     ImageButton sendButton;
-    String currentUserId, friendId, chatId, friendName;
+    String currentUserId, chatId, groupName, groupChatImageUrl;
     ChatManager chatManager;
+    RecyclerView messageRecyclerView;
+    MessagesManager messagesManager;
+    MessagesAdapter messagesAdapter;
     List<Message> messageList;
+    private DocumentSnapshot lastVisible;
+    private boolean isLoadingMore = false;
+    private boolean hasUserScrolled = false;
+    private ListenerRegistration messageListener;
+
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
@@ -40,58 +57,180 @@ public class ChatActivity extends AppCompatActivity {
 
         initialiseData();
         initialiseUI();
+        setupRecyclerView();
 
-        RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
-        ChatAdapter adapter = new ChatAdapter(messageList, currentUserId);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        chatManager.getChat(chatId)
+                .addOnSuccessListener(chat -> {
+                    populateData(chat);
+                    loadInitialMessages();
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "onCreate: ", e));
+    }
 
-        chatManager.getOrCreateChat(currentUserId, friendId, chatId -> {
-            this.chatId = chatId;
+    private void loadInitialMessages() {
+        List<Message> messages = new ArrayList<>();
+        messagesManager.getPaginatedMessages(null)
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        return;
+                    }
+                    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                        messages.add(document.toObject(Message.class));
+                    }
 
-            chatManager.listenForMessages(chatId, updatedMessages -> {
-                Log.d(TAG, "onCreate: listenForMessages: updateMessages size: " + updatedMessages.size());
-                messageList.clear();
-                messageList.addAll(updatedMessages);
-                adapter.notifyDataSetChanged();
-                recyclerView.scrollToPosition(messageList.size() - 1);
-            });
-        });
+                    lastVisible = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                    messageList.addAll(messages);
+                    messagesAdapter.notifyDataSetChanged();
+                    messageRecyclerView.scrollToPosition(0);
+
+                    Timestamp latestTimestamp = messages.get(0).getTimestamp();
+                    listenForNewMessages(latestTimestamp);
+                });
+    }
+
+    private void loadMoreMessages() {
+        isLoadingMore = true;
+        messagesManager.getPaginatedMessages(lastVisible).addOnSuccessListener(snapshots -> {
+                    if (snapshots.isEmpty()) {
+                        isLoadingMore = false;
+                        return;
+                    }
+
+                    int currentSize = messageList.size();
+                    for (DocumentSnapshot document : snapshots.getDocuments()) {
+                        messageList.add(document.toObject(Message.class));
+                    }
+
+                    lastVisible = snapshots.getDocuments().get(snapshots.size() - 1);
+                    messagesAdapter.notifyItemRangeInserted(currentSize, snapshots.size());
+                    isLoadingMore = false;
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "loadMessages: ", e));
+    }
+
+    private void listenForNewMessages(Timestamp latestTimestamp) {
+        messageListener = messagesManager.getLiveMessages(latestTimestamp)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null) return;
+                    Log.d(TAG, "New snapshot received: " + snapshots.size());
+
+                    for (DocumentChange change : snapshots.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            Message newMessage = change.getDocument().toObject(Message.class);
+
+                            // Prevent duplicates (optional: you can improve this check)
+                            if (!messageList.contains(newMessage)) {
+                                Log.d(TAG, "listenForNewMessages: Adding older messages");
+                                messageList.add(0, newMessage);
+                                messagesAdapter.notifyItemInserted(0);
+
+                                if (isUserAtBottom()) {
+                                    messageRecyclerView.scrollToPosition(0);
+                                } else {
+                                    // TODO: show “new messages” pop up or smth
+                                }
+                            }
+                        }
+                    }
+                });
     }
 
     private void sendMessage() {
         String msgText = inputMessage.getText().toString().trim();
-        chatManager.sendMessage(chatId, currentUserId, msgText);
+        messagesManager.sendMessage(msgText);
+        sendButton.setEnabled(false);
         inputMessage.setText("");
     }
 
-
     private void initialiseData() {
-        chatManager = ChatManager.getInstance();
-        currentUserId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        friendId = getIntent().getStringExtra("friendId");
-        friendName = getIntent().getStringExtra("friendName");
-        messageList = new ArrayList<>();
+        currentUserId = FirebaseUtil.getCurrentUserUid();
+        chatId = getIntent().getStringExtra("chatId");
 
-        if (friendId == null || friendName == null) {
-            Log.e(TAG, "Missing friendId or friendName");
-            navigateBack();
-        }
+        chatManager = ChatManager.getInstance();
+        messagesManager = new MessagesManager(chatId);
+
+        messageList = new ArrayList<>();
+        messagesAdapter = new MessagesAdapter(messageList, currentUserId);
+
     }
 
     private void initialiseUI() {
         toolbar = findViewById(R.id.app_bar);
         inputMessage = findViewById(R.id.input_message);
         sendButton = findViewById(R.id.comment_send_button);
+        messageRecyclerView = findViewById(R.id.chat_recycler_view);
 
         setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setTitle(friendName);
 
-        toolbar.setNavigationOnClickListener(v -> navigateBack());
+        toolbar.setNavigationOnClickListener(v -> finish());
         sendButton.setOnClickListener(v -> sendMessage());
+
+        inputMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                sendButton.setEnabled(!s.toString().trim().isEmpty());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
-    private void navigateBack() {
-        finish();
+    private void setupRecyclerView() {
+        RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
+        recyclerView.setAdapter(messagesAdapter);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    hasUserScrolled = true;
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!recyclerView.canScrollVertically(-1) && hasUserScrolled && !isLoadingMore) {
+                    hasUserScrolled = false;
+                    loadMoreMessages();
+                }
+            }
+        });
     }
+
+    private void populateData(Chat chat) {
+        groupName = chat.getGroupName();
+        groupChatImageUrl = chat.getGroupChatImageUrl();
+
+        Objects.requireNonNull(getSupportActionBar()).setTitle(groupName);
+    }
+
+    private boolean isUserAtBottom() {
+        LinearLayoutManager layoutManager = (LinearLayoutManager) messageRecyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            int firstVisible = layoutManager.findFirstVisibleItemPosition();
+            return firstVisible <= 2;
+        }
+        return false;
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (messageListener != null) {
+            messageListener.remove();
+        }
+    }
+
 }

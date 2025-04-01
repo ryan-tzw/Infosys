@@ -1,4 +1,4 @@
-package com.example.infosys.fragments.main;
+package com.example.infosys.fragments.main.common;
 
 import android.util.Log;
 

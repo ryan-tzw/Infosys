@@ -15,11 +15,7 @@ import androidx.fragment.app.FragmentManager;
 import com.example.infosys.R;
 import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.communities.CommunityFragment;
-import com.example.infosys.fragments.main.FriendsFragment;
-import com.example.infosys.fragments.main.HomeFragment;
-import com.example.infosys.fragments.main.NotificationsFragment;
-import com.example.infosys.fragments.main.ProfileFragment;
-import com.example.infosys.fragments.main.nav.NavCommunitiesFragment;
+import com.example.infosys.fragments.main.common.NavFragment;
 import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.MainManager;
 import com.example.infosys.utils.AndroidUtil;
@@ -111,11 +107,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialiseFragments() {
-        profileFragment = new ProfileFragment();
-        homeFragment = new HomeFragment();
-        communitiesFragment = new NavCommunitiesFragment();
-        notificationsFragment = new NotificationsFragment();
-        friendsFragment = new FriendsFragment();
+        profileFragment = NavFragment.newInstance(Nav.PROFILE);
+        homeFragment = NavFragment.newInstance(Nav.HOME);
+        communitiesFragment = NavFragment.newInstance(Nav.COMMUNITIES);
+        notificationsFragment = NavFragment.newInstance(Nav.NOTIFICATIONS);
+        friendsFragment = NavFragment.newInstance(Nav.FRIENDS);
         activeFragment = homeFragment;
 
         getSupportFragmentManager().beginTransaction()
