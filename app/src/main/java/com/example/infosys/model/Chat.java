@@ -1,6 +1,7 @@
 package com.example.infosys.model;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.PropertyName;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ public class Chat {
     private List<String> participants;
     private String lastMessage;
     private Timestamp lastUpdated;
+    @PropertyName("groupChat")
     private boolean isGroupChat;
     private String groupName;
     private String groupChatImageUrl;

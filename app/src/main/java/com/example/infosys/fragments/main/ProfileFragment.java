@@ -2,6 +2,7 @@ package com.example.infosys.fragments.main;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,13 +13,19 @@ import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.infosys.R;
 import com.example.infosys.fragments.main.common.BaseFragment;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,6 +65,24 @@ public class ProfileFragment extends BaseFragment {
                             AndroidUtil.loadProfilePicture(requireContext(), selectedImageUri, profileImage);
 
                             uploadImageToFirebase(selectedImageUri);
+
+                            Glide.with(requireContext())
+                                    .load(selectedImageUri)
+                                    .circleCrop()
+                                    .placeholder(R.drawable.ic_profile_placeholder)
+                                    .into(new CustomTarget<Drawable>() {
+                                        @Override
+                                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                            Log.d(TAG, "onResourceReady: Resource ready");
+                                            BottomNavigationView bottomNavigationView = requireActivity().findViewById(R.id.bottom_navigation);
+                                            bottomNavigationView.getMenu().findItem(R.id.nav_profile).setIcon(resource);
+                                        }
+
+                                        @Override
+                                        public void onLoadCleared(@Nullable Drawable placeholder) {
+                                            Log.d(TAG, "onLoadCleared: Load Cleared");
+                                        }
+                                    });
                         }
                     }
                 });

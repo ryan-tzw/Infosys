@@ -42,7 +42,7 @@ public class ChatActivity extends AppCompatActivity {
     MaterialToolbar toolbar;
     EditText inputMessage;
     ImageButton sendButton;
-    String currentUserId, chatId, groupName, groupChatImageUrl;
+    String currentUserId, chatId, groupName;
     ChatManager chatManager;
     RecyclerView messageRecyclerView;
     MessagesManager messagesManager;
@@ -102,9 +102,10 @@ public class ChatActivity extends AppCompatActivity {
                     messageList.addAll(messages);
                     messagesAdapter.notifyDataSetChanged();
                     messageRecyclerView.scrollToPosition(0);
-
-                    Timestamp latestTimestamp = messages.get(0).getTimestamp();
-                    listenForNewMessages(latestTimestamp);
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "loadMessages: ", e))
+                .addOnCompleteListener(task -> {
+                    listenForNewMessages(Timestamp.now());
                 });
     }
 

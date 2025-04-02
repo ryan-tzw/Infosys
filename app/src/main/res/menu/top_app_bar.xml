@@ -6,18 +6,5 @@
         android:id="@+id/logout"
         android:title="@string/logout"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/search"
-        android:icon="@drawable/ic_search"
-        android:iconTint="@color/white"
-        android:title="@string/search"
-        app:showAsAction="ifRoom" />
-
-    <!--    <item-->
-    <!--        android:id="@+id/test_button"-->
-    <!--        android:title="Test"-->
-    <!--        app:showAsAction="ifRoom"-->
-    <!--        android:icon="@drawable/ic_heart"-->
-    <!--        android:iconTint="@color/white"/>-->
+    
 </menu>

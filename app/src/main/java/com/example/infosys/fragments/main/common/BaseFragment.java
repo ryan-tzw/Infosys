@@ -33,7 +33,7 @@ public abstract class BaseFragment extends Fragment implements ToolbarConfigurab
     public void configureToolbar(MaterialToolbar toolbar) {
         Log.d(TAG, "configureToolbar: ");
         if (MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).getBackStackEntryCount() == 0) {
-            toolbar.setNavigationIcon(R.drawable.ic_menu);
+            toolbar.setNavigationIcon(R.drawable.ic_search);
             toolbar.setNavigationOnClickListener(v -> {
                 // TODO: nav drawer
 

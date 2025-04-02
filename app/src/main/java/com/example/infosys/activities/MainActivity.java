@@ -1,5 +1,6 @@
 package com.example.infosys.activities;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -12,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.infosys.R;
 import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.communities.CommunityFragment;
@@ -22,6 +26,8 @@ import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,10 +46,33 @@ public class MainActivity extends AppCompatActivity {
         MainManager.getInstance().setMainActivity(this);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setItemIconTintList(null);
         topAppBar = findViewById(R.id.app_bar);
 
-        overrideBackButton();
+        Log.d(TAG, "onCreate: Retrieving and converting profile picture to drawable bitmap");
+        StorageReference profilePictureReference = FirebaseStorage.getInstance().getReference().child("profile_pictures/").child(Objects.requireNonNull(FirebaseUtil.getCurrentUserUid()));
+        profilePictureReference.getDownloadUrl()
+                .addOnSuccessListener(uri -> {
+                    Glide.with(this)
+                            .load(uri)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .into(new CustomTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    Log.d(TAG, "onResourceReady: Resource ready");
+                                    bottomNavigationView.getMenu().findItem(R.id.nav_profile).setIcon(resource);
+                                }
 
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                    Log.d(TAG, "onLoadCleared: Load Cleared");
+                                }
+                            });
+                });
+
+        overrideBackButton();
+        
         initialiseAppBar(topAppBar);
         initialiseFragments();
 

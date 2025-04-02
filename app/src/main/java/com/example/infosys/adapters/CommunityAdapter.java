@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.infosys.R;
 import com.example.infosys.fragments.communities.CommunityFragment;
 import com.example.infosys.model.Community;
@@ -40,7 +41,13 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.Comm
         holder.communityDescription.setText(community.getDescription());
         String memberCount = community.getMemberCount() + " members";
         holder.communityMembers.setText(memberCount);
-//        holder.communityImage.setImageResource(community.getImage());
+
+        Glide.with(holder.itemView.getContext())
+                .load(community.getImageUrl())
+                .placeholder(R.drawable.logo)
+                .error(R.drawable.logo)
+                .circleCrop()
+                .into(holder.communityImage);
 
         holder.itemView.setOnClickListener(v -> {
             CommunityFragment fragment = CommunityFragment.newInstance(community.getId());

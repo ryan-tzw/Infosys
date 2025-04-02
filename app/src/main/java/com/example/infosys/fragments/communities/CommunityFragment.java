@@ -40,7 +40,9 @@ import com.example.infosys.managers.CommunityManager;
 import com.example.infosys.managers.MainManager;
 import com.example.infosys.model.Community;
 import com.example.infosys.utils.AndroidUtil;
+import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -137,13 +139,24 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.community, menu);
+        CommunityManager.getInstance().isUserAdminOfCommunity(communityId)
+                .addOnSuccessListener(isAdmin -> {
+                    Log.d(TAG, "onCreateMenu: isAdmin: " + isAdmin);
+                    if (isAdmin) {
+                        menuInflater.inflate(R.menu.community_admin, menu);
+                    }
+                });
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
         if (menuItem.getItemId() == R.id.manage_button) {
-            // TODO implement banning
+            Log.d(TAG, "onMenuItemSelected: Manage users");
+            MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).beginTransaction()
+                    .replace(R.id.nav_container, ManageUsersFragment.newInstance(communityId))
+                    .addToBackStack(null)
+                    .commit();
+            return true;
         }
         return false;
     }
@@ -187,15 +200,15 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
         task.addOnSuccessListener(aVoid -> AndroidUtil.showToast(requireContext(), "Joined " + communityName));
         memberCount++;
         updateMemberCountDisplay();
-        setJoinButton(true);
+        setJoinButton(true, false);
     }
 
     private void leaveCommunity() {
-        Task<Void> task = CommunityManager.getInstance().leaveCommunity(communityId);
+        Task<Void> task = CommunityManager.getInstance().leaveCommunity(communityId, FirebaseUtil.getCurrentUserUid());
         task.addOnSuccessListener(aVoid -> AndroidUtil.showToast(requireContext(), "Left " + communityName));
         memberCount--;
         updateMemberCountDisplay();
-        setJoinButton(false);
+        setJoinButton(false, false);
     }
 
     private void showScreen() {
@@ -223,10 +236,20 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
             populateData(community);
             setupViewPager(view);
 
-            CommunityManager.getInstance().isUserMemberOfCommunity(communityId, isMember -> {
-                setJoinButton(isMember);
-                showScreen();
-            });
+            Task<Boolean> isMemberTask = CommunityManager.getInstance().isUserMember(communityId, FirebaseUtil.getCurrentUserUid());
+            Task<Boolean> isBannedTask = CommunityManager.getInstance().isUserBanned(communityId, FirebaseUtil.getCurrentUserUid());
+
+            Tasks.whenAllSuccess(isMemberTask, isBannedTask)
+                    .addOnSuccessListener(tasks -> {
+                        boolean isMember = (Boolean) tasks.get(0);
+                        boolean isBanned = (Boolean) tasks.get(1);
+                        setJoinButton(isMember, isBanned);
+                        showScreen();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "retrieveCommunityData: Failed to check membership status", e);
+                        showScreen();
+                    });
         });
     }
 
@@ -269,7 +292,7 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
         viewPager = view.findViewById(R.id.view_pager);
     }
 
-    private void setJoinButton(boolean isMember) {
+    private void setJoinButton(boolean isMember, boolean isBanned) {
         int color = ContextCompat.getColor(requireContext(), R.color.primaryColor);
         if (isMember) {
             joinButton.setOnClickListener(v -> leaveCommunity());
@@ -287,6 +310,16 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
             joinButton.setIcon(drawable);
             joinButton.setBackgroundColor(color);
             joinButton.setStrokeColor(null);
+        }
+
+        if (isBanned) {
+            joinButton.setEnabled(false);
+            joinButton.setText("BANNED");
+            joinButton.setTextColor(Color.RED);
+            joinButton.setIcon(null);
+            joinButton.setBackgroundColor(Color.TRANSPARENT);
+            joinButton.setStrokeColorResource(R.color.red);
+            joinButton.setStrokeWidth(2);
         }
     }
 }

@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class MessagesManager {
     private static final String TAG = "MessagesManager";
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 25;
     private final FirebaseFirestore db;
     private final String chatId, currentUserId;
 

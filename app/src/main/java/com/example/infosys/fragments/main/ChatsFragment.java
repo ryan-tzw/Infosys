@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,7 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.infosys.R;
 import com.example.infosys.adapters.ChatsAdapter;
 import com.example.infosys.enums.Nav;
-import com.example.infosys.fragments.CreateChatFragment;
+import com.example.infosys.fragments.chats.CreateDmFragment;
+import com.example.infosys.fragments.chats.CreateGroupChatFragment;
 import com.example.infosys.fragments.main.common.BaseFragment;
 import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.ChatManager;
@@ -96,10 +98,26 @@ public class ChatsFragment extends BaseFragment implements ToolbarConfigurable {
         btnCreateChat = view.findViewById(R.id.create_chat_button);
 
         btnCreateChat.setOnClickListener(v -> {
-            MainManager.getInstance().getNavFragmentManager(Nav.CHATS).beginTransaction()
-                    .replace(R.id.nav_container, CreateChatFragment.newInstance())
-                    .addToBackStack(null)
-                    .commit();
+            PopupMenu popup = new PopupMenu(getContext(), v);
+            popup.getMenuInflater().inflate(R.menu.new_chat_popup, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.create_new_dm) {
+                    MainManager.getInstance().getNavFragmentManager(Nav.CHATS).beginTransaction()
+                            .replace(R.id.nav_container, CreateDmFragment.newInstance())
+                            .addToBackStack(null)
+                            .commit();
+                    return true;
+                }
+                if (item.getItemId() == R.id.create_new_group) {
+                    MainManager.getInstance().getNavFragmentManager(Nav.CHATS).beginTransaction()
+                            .replace(R.id.nav_container, CreateGroupChatFragment.newInstance())
+                            .addToBackStack(null)
+                            .commit();
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
         });
     }
 

@@ -13,6 +13,7 @@ public class Community {
     private List<String> adminIds;
     private String ownerId;
     private List<String> bannedUserIds;
+    private String imageUrl;
 
     public Community() {
         // Required empty public constructor for Firestore
@@ -101,5 +102,9 @@ public class Community {
 
     public List<String> getBannedUserIds() {
         return bannedUserIds;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 }

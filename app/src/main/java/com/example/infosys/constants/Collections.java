@@ -20,6 +20,8 @@ public class Collections {
     public static class Communities {
         public static final String POSTS = "posts";
         public static final String MEMBERS = "members";
+        public static final String BANNED_USERS = "bannedUserIds";
+        public static final String ADMINS = "adminIds";
     }
 
 }

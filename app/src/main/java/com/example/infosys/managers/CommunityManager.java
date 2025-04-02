@@ -6,19 +6,27 @@ import android.util.Log;
 import com.example.infosys.constants.Collections;
 import com.example.infosys.model.Community;
 import com.example.infosys.model.Member;
+import com.example.infosys.model.User;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class CommunityManager {
     private static final String TAG = "CommunityManager";
+    private static final String COMMUNITIES = Collections.COMMUNITIES;
+    private static final String MEMBERS = Collections.Communities.MEMBERS;
+    private static final String BANNED_USERS = Collections.Communities.BANNED_USERS;
+    private static final String ADMINS = Collections.Communities.ADMINS;
     private static CommunityManager instance;
     private final FirebaseFirestore db;
 
@@ -33,8 +41,60 @@ public class CommunityManager {
         return instance;
     }
 
+
+    public Task<List<User>> getMembers(String communityId) {
+        // use getMemberIds to get the list of member IDs then get the user details
+        return getMemberIds(communityId)
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> memberIds = task.getResult();
+                        List<Task<User>> userTasks = new ArrayList<>();
+                        for (String memberId : memberIds) {
+                            userTasks.add(UserManager.getInstance().getUser(memberId));
+                        }
+                        return Tasks.whenAllSuccess(userTasks);
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                })
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        List<Object> result = task.getResult();
+                        Log.d(TAG, "getMembers: Length of result: " + result.size());
+
+                        List<User> users = new ArrayList<>();
+                        for (Object obj : result) {
+                            if (obj instanceof User) {
+                                users.add((User) obj);
+                            }
+                        }
+                        Log.d(TAG, "getMembers: Length of users: " + users.size());
+                        return users;
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
+    public Task<List<String>> getMemberIds(String communityId) {
+        return db.collection(COMMUNITIES).document(communityId)
+                .collection(MEMBERS)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> memberIds = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            memberIds.add(document.getId());
+                        }
+                        return memberIds;
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
     public void getCommunity(String communityId, OnCommunityRetrieved callback) {
-        db.collection(Collections.COMMUNITIES).document(communityId).get()
+        db.collection(COMMUNITIES).document(communityId).get()
                 .addOnSuccessListener(documentSnapshot -> callback.onCommunityRetrieved(documentSnapshot.toObject(Community.class)))
                 .addOnFailureListener(e -> Log.e(TAG, "getCommunity: Error retrieving community details: ", e));
     }
@@ -42,7 +102,7 @@ public class CommunityManager {
     public void createCommunity(Community community, CreateCommunityCallback callback) {
         Log.d(TAG, "createCommunity: Creating Community...");
 
-        db.collection(Collections.COMMUNITIES).document(community.getId()).set(community)
+        db.collection(COMMUNITIES).document(community.getId()).set(community)
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "createCommunity: Community created with ID: " + community.getId());
                     setupNewCommunity(community, callback);
@@ -67,15 +127,90 @@ public class CommunityManager {
 
     }
 
+    public Task<Boolean> isUserAdminOfCommunity(String communityId) {
+        String userId = FirebaseUtil.getCurrentUserUid();
+        assert userId != null;
+        return db.collection(COMMUNITIES).document(communityId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> adminIds = (List<String>) task.getResult().get(ADMINS);
+                        return adminIds != null && adminIds.contains(userId);
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
+    // get list of admins
+    public Task<List<String>> getAdmins(String communityId) {
+        return db.collection(COMMUNITIES).document(communityId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> adminIds = (List<String>) task.getResult().get(ADMINS);
+                        return adminIds;
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
+    // ban user
+    public Task<Void> banUser(String communityId, String userId) {
+        return db.collection(COMMUNITIES).document(communityId)
+                .update(BANNED_USERS, FieldValue.arrayUnion(userId))
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        return leaveCommunity(communityId, userId);
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
+    // unban user
+    public Task<Void> unbanUser(String communityId, String userId) {
+        return db.collection(Collections.COMMUNITIES).document(communityId)
+                .update(BANNED_USERS, FieldValue.arrayRemove(userId));
+    }
+
+    // check if user is banned
+    public Task<Boolean> isUserBanned(String communityId, String userId) {
+        return db.collection(Collections.COMMUNITIES).document(communityId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> bannedUsers = (List<String>) task.getResult().get(BANNED_USERS);
+                        return bannedUsers != null && bannedUsers.contains(userId);
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
+    public Task<List<String>> getBannedUserIds(String communityId) {
+        return db.collection(Collections.COMMUNITIES).document(communityId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        List<String> bannedUsers = (List<String>) task.getResult().get(BANNED_USERS);
+                        return bannedUsers;
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
     public Task<Void> addAdmin(String communityId, String userId) {
         // Add userId to adminIds array
         return db.collection(Collections.COMMUNITIES).document(communityId)
-                .update("adminIds", FieldValue.arrayUnion(userId));
+                .update(ADMINS, FieldValue.arrayUnion(userId));
     }
 
     public Task<Void> removeAdmin(String communityId, String userId) {
         return db.collection(Collections.COMMUNITIES).document(communityId)
-                .update("adminIds", FieldValue.arrayRemove(userId));
+                .update(ADMINS, FieldValue.arrayRemove(userId));
     }
 
     public Task<Void> setCommunityOwner(String communityId, String userId) {
@@ -83,13 +218,16 @@ public class CommunityManager {
                 .update("ownerId", userId);
     }
 
-    public void isUserMemberOfCommunity(String communityId, OnUserMemberCheck callback) {
-        String userId = FirebaseUtil.getCurrentUserUid();
-        assert userId != null;
-        db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection("members").document(userId).get()
-                .addOnSuccessListener(documentSnapshot -> callback.onUserMemberCheck(documentSnapshot.exists()))
-                .addOnFailureListener(e -> Log.e(TAG, "isUserMemberOfCommunity: ", e));
+    public Task<Boolean> isUserMember(String communityId, String userId) {
+        return db.collection(Collections.COMMUNITIES).document(communityId)
+                .collection(MEMBERS).document(userId).get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        return task.getResult().exists();
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
     }
 
     public Task<Void> joinCommunity(String communityId) {
@@ -102,7 +240,7 @@ public class CommunityManager {
         assert currentUserId != null;
 
         Task<Void> addUserToMemberListTask = db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection("members").document(currentUserId)
+                .collection(MEMBERS).document(currentUserId)
                 .set(member);
 
         Task<Void> incrementMemberCountTask = db.collection(Collections.COMMUNITIES).document(communityId)
@@ -123,25 +261,37 @@ public class CommunityManager {
                 });
     }
 
-    public Task<Void> leaveCommunity(String communityId) {
-        Log.d(TAG, "leaveCommunity: Leaving Community...");
-        String currentUserId = FirebaseUtil.getCurrentUserUid();
-        assert currentUserId != null;
+    public Task<Void> leaveCommunity(String communityId, String userId) {
+        Log.d(TAG, "leaveCommunity: Leaving Community: " + communityId + " for user: " + userId);
 
-        Task<Void> removeUserFromMemberListTask = db.collection(Collections.COMMUNITIES).document(communityId)
-                .collection("members").document(currentUserId)
+        Task<Void> removeUserFromMemberListTask = db.collection(COMMUNITIES).document(communityId)
+                .collection(MEMBERS).document(userId)
                 .delete();
 
-        Task<Void> decrementMemberCountTask = db.collection(Collections.COMMUNITIES).document(communityId)
+        Task<Void> decrementMemberCountTask = db.collection(COMMUNITIES).document(communityId)
                 .update("memberCount", FieldValue.increment(-1));
 
-        Task<Void> removeCommunityFromUserTask = db.collection(Collections.USERS).document(currentUserId)
+        Task<Void> removeCommunityFromUserTask = db.collection(Collections.USERS).document(userId)
                 .update("communitiesList", FieldValue.arrayRemove(communityId));
 
-        return Tasks.whenAllSuccess(removeUserFromMemberListTask, decrementMemberCountTask, removeCommunityFromUserTask)
+        Task<Void> removeAdminTask = isUserAdminOfCommunity(communityId)
+                .continueWithTask(task -> {
+                    if (task.isSuccessful() && task.getResult()) {
+                        return removeAdmin(communityId, userId);
+                    } else {
+                        return Tasks.forResult(null);
+                    }
+                });
+
+        return Tasks.whenAllSuccess(
+                        removeUserFromMemberListTask,
+                        decrementMemberCountTask,
+                        removeCommunityFromUserTask,
+                        removeAdminTask
+                )
                 .continueWithTask(task -> {
                     if (task.isSuccessful()) {
-                        Log.d(TAG, "leaveCommunity: Successfully left community: " + communityId);
+                        Log.d(TAG, "leaveCommunity: Successfully left community: " + userId);
                         return Tasks.forResult(null);
                     } else {
                         Log.e(TAG, "leaveCommunity: Error leaving community", task.getException());

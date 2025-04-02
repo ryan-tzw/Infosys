@@ -1,4 +1,4 @@
-package com.example.infosys.fragments;
+package com.example.infosys.fragments.chats;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,34 +27,27 @@ import com.example.infosys.managers.MainManager;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateChatFragment extends Fragment implements ToolbarConfigurable {
-    private static final String TAG = CreateChatFragment.class.getSimpleName();
-
+public class CreateDmFragment extends Fragment implements ToolbarConfigurable {
+    private static final String TAG = CreateDmFragment.class.getSimpleName();
+    private static final String ARG_OTHER_USER_ID = "otherUserId";
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
-    private TextInputEditText searchInput;
-    private ChipGroup chipGroup;
-    private RecyclerView searchResultsRecyclerView;
-    private List<String> selectedUserIds = new ArrayList<>();
-    private Runnable searchRunnable;
     private UserManager userManager;
     private UserAdapter userAdapter;
-    private MaterialButton submitButton;
+    private TextInputEditText searchInput;
+    private Runnable searchRunnable;
+    private RecyclerView searchResultsRecyclerView;
 
-
-    public CreateChatFragment() {
+    public CreateDmFragment() {
         // Required empty public constructor
     }
 
-    public static CreateChatFragment newInstance() {
-        return new CreateChatFragment();
+    public static CreateDmFragment newInstance() {
+        return new CreateDmFragment();
     }
 
     @Override
@@ -63,64 +56,45 @@ public class CreateChatFragment extends Fragment implements ToolbarConfigurable 
         userManager = UserManager.getInstance();
     }
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_create_chat, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_create_dm, container, false);
     }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        instantiateViews(view);
-        setupRecyclerView();
-        setupInputs();
-
-    }
-
-    private void addUserChip(String userId, String displayName) {
-        if (selectedUserIds.contains(userId)) return;
-
-        selectedUserIds.add(userId);
-
-        Chip chip = new Chip(requireContext());
-        chip.setText(displayName);
-        chip.setCloseIconVisible(true);
-        chip.setOnCloseIconClickListener(v -> {
-            chipGroup.removeView(chip);
-            selectedUserIds.remove(userId);
-        });
-
-        chipGroup.addView(chip);
-    }
-
-    private void navigateToChat(String chatId) {
-        MainManager.getInstance().getMainFragmentManager().popBackStack();
-
-        Intent intent = new Intent(requireContext(), ChatActivity.class);
-        intent.putExtra("chatId", chatId);
-        requireContext().startActivity(intent);
-    }
-
-    private void instantiateViews(View view) {
         searchInput = view.findViewById(R.id.search_input);
-        chipGroup = view.findViewById(R.id.selected_users_chip_group);
         searchResultsRecyclerView = view.findViewById(R.id.search_results_recycler_view);
-        submitButton = view.findViewById(R.id.submit_button);
-    }
 
-    private void setupRecyclerView() {
         userAdapter = new UserAdapter(user -> {
-            addUserChip(user.getUid(), user.getUsername());
+            Log.d(TAG, "onViewCreated: User clicked: " + user.getUsername());
+
+            String currentUserId = FirebaseUtil.getCurrentUserUid();
+
+            ChatManager.getInstance()
+                    .getDirectMessageId(currentUserId, user.getUid())
+                    .addOnSuccessListener(chatId -> {
+                        Log.d(TAG, "onViewCreated: Retrieved DM/chat id: " + chatId);
+                        if (chatId != null) {
+                            navigateToChat(chatId);
+                        } else {
+                            List<String> participants = new ArrayList<>();
+                            participants.add(user.getUid());
+
+                            ChatManager.getInstance().createChat(currentUserId, participants, false, null)
+                                    .addOnSuccessListener(this::navigateToChat)
+                                    .addOnFailureListener(e -> Log.e(TAG, "Failed in starting DM", e));
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to get DM ID", e));
         });
 
         searchResultsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         searchResultsRecyclerView.setAdapter(userAdapter);
-    }
 
-    private void setupInputs() {
+        // Search input
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -134,6 +108,9 @@ public class CreateChatFragment extends Fragment implements ToolbarConfigurable 
                     String query = s.toString().trim();
                     if (!query.isEmpty()) {
                         userManager.searchUsers(query).addOnSuccessListener(users -> {
+                            // Filter out the current user from the search results
+                            users.removeIf(user -> user.getUid().equals(FirebaseUtil.getCurrentUserUid()));
+
                             userAdapter.setUsers(users);
                         });
                     } else {
@@ -148,14 +125,15 @@ public class CreateChatFragment extends Fragment implements ToolbarConfigurable 
             public void afterTextChanged(Editable s) {
             }
         });
-
-        submitButton.setOnClickListener(v -> {
-            ChatManager.getInstance().createChat(FirebaseUtil.getCurrentUserUid(), selectedUserIds)
-                    .addOnSuccessListener(this::navigateToChat)
-                    .addOnFailureListener(e -> Log.e("CreateChat", "Error creating chat", e));
-        });
     }
 
+    private void navigateToChat(String chatId) {
+        MainManager.getInstance().getNavFragmentManager(Nav.CHATS).popBackStack();
+
+        Intent intent = new Intent(getContext(), ChatActivity.class);
+        intent.putExtra("chatId", chatId);
+        startActivity(intent);
+    }
 
     @Override
     public void configureToolbar(MaterialToolbar toolbar) {
