@@ -10,41 +10,58 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.infosys.R;
+import com.example.infosys.adapters.UserPostsAdapter;
 import com.example.infosys.fragments.main.common.BaseFragment;
+import com.example.infosys.managers.UserManager;
+import com.example.infosys.model.Post;
+import com.example.infosys.model.User;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.github.dhaval2404.imagepicker.ImagePicker;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileFragment extends BaseFragment {
     private static final String TAG = "ProfileFragment";
+    private static final String ARG_USER_ID = "userId";
+    UserPostsAdapter adapter;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ImageView profileImage;
-    private StorageReference storageReference;
+    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, noPostsText;
+    private ConstraintLayout friendsCountLayout, communitiesCountLayout;
+    private RecyclerView postsRecyclerView;
+    private User user;
+    private String userId;
+    private List<Post> postsList;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     public ProfileFragment() {
         // Required empty public constructor
     }
 
-    public static ProfileFragment newInstance(String param1, String param2) {
+    public static ProfileFragment newInstance(String userId) {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
+        args.putString(ARG_USER_ID, userId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,9 +69,88 @@ public class ProfileFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            userId = getArguments().getString(ARG_USER_ID);
+        }
+        setupImagePicker();
+    }
 
-        storageReference = FirebaseStorage.getInstance().getReference();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
+        instantiateViews(view);
+        getProfilePicture();
+
+        UserManager.getInstance().getUser(userId)
+                .addOnSuccessListener(user -> {
+                    this.user = user;
+                    populateData();
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "onCreateView: Failed to get user data", e));
+
+        setupPostsRecyclerView(view);
+
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadPosts();
+            swipeRefreshLayout.setRefreshing(false);
+        });
+
+
+        return view;
+    }
+
+    private void instantiateViews(View view) {
+        profileImage = view.findViewById(R.id.profile_picture);
+        txtName = view.findViewById(R.id.profile_name);
+        txtAboutMe = view.findViewById(R.id.profile_about_me);
+        txtFriendsCount = view.findViewById(R.id.profile_friends_count);
+        txtCommunitiesCount = view.findViewById(R.id.profile_communities_count);
+        friendsCountLayout = view.findViewById(R.id.profile_friends_layout);
+        communitiesCountLayout = view.findViewById(R.id.profile_communities_layout);
+        postsRecyclerView = view.findViewById(R.id.profile_recycler_view);
+
+        profileImage.setOnClickListener(v -> choosePicture());
+    }
+
+    private void populateData() {
+        txtName.setText(user.getUsername());
+        txtFriendsCount.setText(String.valueOf(user.getFriendsCount()));
+        txtCommunitiesCount.setText(String.valueOf(user.getCommunitiesCount()));
+        if (user.getBio() == null || user.getBio().isEmpty()) {
+            txtAboutMe.setText("Hi! I'm " + user.getUsername() + ". I haven't written anything about myself yet.");
+        } else {
+            txtAboutMe.setText(user.getBio());
+        }
+    }
+
+    private void setupPostsRecyclerView(View view) {
+        postsList = new ArrayList<>();
+        adapter = new UserPostsAdapter(postsList, userId);
+
+        postsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        postsRecyclerView.setAdapter(adapter);
+
+        AndroidUtil.setupDivider(view, postsRecyclerView);
+
+        loadPosts();
+    }
+
+    private void loadPosts() {
+        UserManager.getInstance().getAllUserPosts(userId)
+                .addOnSuccessListener(posts -> {
+                    Log.d(TAG, "loadPosts: " + posts.size() + " posts loaded");
+                    postsList.clear();
+                    postsList.addAll(posts);
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "loadPosts: Failed to load posts", e));
+    }
+
+
+    private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -88,19 +184,6 @@ public class ProfileFragment extends BaseFragment {
                 });
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
-
-        profileImage = view.findViewById(R.id.profile_picture);
-
-        getProfilePicture();
-
-        profileImage.setOnClickListener(v -> choosePicture());
-        return view;
-    }
-
     private void choosePicture() {
         ImagePicker.with(this)
                 .cropSquare()
@@ -119,44 +202,21 @@ public class ProfileFragment extends BaseFragment {
         // Use the user's ID as the filename for the image
         String currentUserUid = FirebaseUtil.getCurrentUserUid();
 
-        StorageReference imageRef = storageReference.child("profile_pictures/" + currentUserUid);
-        imageRef.putFile(imageUri)
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        throw task.getException();
-                    }
-                    return imageRef.getDownloadUrl();
-                })
-                .continueWithTask(urlTask -> {
-                    if (!urlTask.isSuccessful()) {
-                        throw urlTask.getException();
-                    }
-                    Uri downloadUrl = urlTask.getResult();
-                    return setUserProfilePictureUrl(downloadUrl.toString());
-                })
+        UserManager.getInstance().setProfilePicture(currentUserUid, imageUri)
                 .addOnSuccessListener(aVoid -> {
                     progressIndicator.setVisibility(View.GONE);
                     Snackbar.make(requireView(), "Profile picture updated", Snackbar.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     progressIndicator.setVisibility(View.GONE);
-                    AndroidUtil.showToast(getContext(), "Failed to upload image");
+                    AndroidUtil.showToast(requireContext(), "Failed to upload image");
                     Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
                 });
     }
 
-    private Task<Void> setUserProfilePictureUrl(String url) {
-        String currentUserUid = FirebaseUtil.getCurrentUserUid();
-        assert currentUserUid != null;
-        return FirebaseFirestore.getInstance()
-                .collection("users").document(currentUserUid)
-                .update("profilePictureUrl", url);
-    }
-
     private void getProfilePicture() {
         String currentUserUid = FirebaseUtil.getCurrentUserUid();
-        StorageReference imageRef = storageReference.child("profile_pictures/" + currentUserUid);
-        imageRef.getDownloadUrl()
+        UserManager.getInstance().getProfilePicture(currentUserUid)
                 .addOnSuccessListener(uri -> {
                     Log.d(TAG, "getProfilePicture: " + uri);
                     AndroidUtil.loadProfilePicture(requireActivity(), uri, profileImage);

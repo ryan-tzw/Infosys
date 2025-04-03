@@ -58,5 +58,6 @@ dependencies {
     implementation(libs.viewpager2)
     implementation(libs.android.image.picker)
     implementation(libs.circleindicator)
+    implementation(libs.firebase.ui.firestore)
 
 }

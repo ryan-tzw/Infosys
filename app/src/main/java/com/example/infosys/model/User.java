@@ -1,6 +1,7 @@
 package com.example.infosys.model;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -10,9 +11,13 @@ public class User implements Serializable {
     private String username;
     private String usernameLowercase;
     private String email;
+    private String profilePictureUrl;
     private List<User> friendsList;
     private List<String> communitiesList;
-    private String profilePictureUrl;
+    private String bio;
+    private List<String> interests;
+    private String location;
+    private Timestamp dateOfBirth;
 
     public User() {
     }
@@ -27,9 +32,6 @@ public class User implements Serializable {
         this.profilePictureUrl = "";
     }
 
-    public String getUsernameLowercase() {
-        return usernameLowercase;
-    }
 
     public String getUid() {
         return uid;
@@ -47,6 +49,14 @@ public class User implements Serializable {
         return friendsList;
     }
 
+    public int getFriendsCount() {
+        return friendsList == null ? 0 : friendsList.size();
+    }
+
+    public int getCommunitiesCount() {
+        return communitiesList == null ? 0 : communitiesList.size();
+    }
+
     public List<String> getCommunitiesList() {
         return communitiesList;
     }
@@ -55,26 +65,20 @@ public class User implements Serializable {
         return profilePictureUrl;
     }
 
-    public void addFriend(User friend) {
-        if (friendsList == null) {
-            friendsList = new ArrayList<>();
-        }
-        friendsList.add(friend);
+    public String getBio() {
+        return bio;
     }
 
-    public void removeFriend(User friend) {
-        friendsList.remove(friend);
+    public List<String> getInterests() {
+        return interests;
     }
 
-    public void addCommunity(String communityId) {
-        if (communitiesList == null) {
-            communitiesList = new ArrayList<>();
-        }
-        communitiesList.add(communityId);
+    public String getLocation() {
+        return location;
     }
 
-    public void removeCommunity(String communityId) {
-        communitiesList.remove(communityId);
+    public Timestamp getDateOfBirth() {
+        return dateOfBirth;
     }
 
     @Override

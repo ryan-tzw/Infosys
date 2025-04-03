@@ -1,14 +1,19 @@
 package com.example.infosys.managers;
 
+import android.net.Uri;
 import android.util.Log;
 
 import com.example.infosys.constants.Collections;
 import com.example.infosys.model.Chat;
+import com.example.infosys.model.Post;
 import com.example.infosys.model.User;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +33,10 @@ public class UserManager {
         }
         return instance;
     }
+
+    /*
+     Functions for getting user data
+     */
 
     public Task<String> getUserProfilePictureUrl(String userId) {
         return db.collection(Collections.USERS).document(userId)
@@ -92,6 +101,69 @@ public class UserManager {
             }
         }
         return null;
+    }
+
+    public Task<List<Post>> getAllUserPosts(String userId) {
+        return db.collectionGroup(Collections.Communities.POSTS)
+                .whereEqualTo("authorId", userId)
+                .orderBy("dateCreated", Query.Direction.DESCENDING)
+                .get()
+                .continueWith(task -> {
+                    Log.d(TAG, "getAllUserPosts: " + task.getResult().size());
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        List<Post> posts = new ArrayList<>();
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            Post post = doc.toObject(Post.class);
+                            if (post != null) {
+                                posts.add(post);
+                            }
+                        }
+                        Log.d(TAG, "getAllUserPosts: Posts retrieved: " + posts.size());
+                        return posts;
+                    } else {
+                        throw new Exception("Failed to retrieve posts");
+                    }
+                });
+    }
+
+
+    /*
+     Functions for profile picture
+     */
+
+    public Task<Uri> getProfilePicture(String userId) {
+        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("profile_pictures/" + userId);
+        return imageReference.getDownloadUrl();
+    }
+
+    public Task<Void> setProfilePicture(String userId, Uri url) {
+        return uploadProfilePicture(userId, url)
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        String downloadUrl = task.getResult().toString();
+                        return setProfilePictureUrl(userId, downloadUrl);
+                    } else {
+                        throw task.getException();
+                    }
+                });
+
+    }
+
+    private Task<Uri> uploadProfilePicture(String userId, Uri url) {
+        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("profile_pictures/" + userId);
+
+        return imageReference.putFile(url)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return imageReference.getDownloadUrl();
+                });
+    }
+
+    private Task<Void> setProfilePictureUrl(String userId, String url) {
+        return db.collection(Collections.USERS).document(userId)
+                .update("profilePictureUrl", url);
     }
 
 

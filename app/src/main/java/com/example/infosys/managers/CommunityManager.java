@@ -11,6 +11,7 @@ import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -39,6 +40,23 @@ public class CommunityManager {
             instance = new CommunityManager();
         }
         return instance;
+    }
+
+    public Task<String> getCommunityName(String communityId) {
+        return db.collection(COMMUNITIES).document(communityId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            return document.getString("name");
+                        } else {
+                            throw new Exception("Community not found");
+                        }
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
     }
 
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Post {
     private String uid;
+    private String communityId;
     private String title;
     private String body;
     private List<String> imageUrls;
@@ -21,7 +22,7 @@ public class Post {
     public Post() {
     }
 
-    public Post(String uid, String title, String body, Timestamp dateCreated, String authorId, String authorName) {
+    public Post(String uid, String title, String body, Timestamp dateCreated, String authorId, String authorName, String communityId) {
         this.uid = uid;
         this.title = title;
         this.body = body;
@@ -33,6 +34,11 @@ public class Post {
         this.commentsCount = 0;
         this.imageUrls = new ArrayList<>();
         this.tags = new ArrayList<>();
+        this.communityId = communityId;
+    }
+
+    public String getCommunityId() {
+        return communityId;
     }
 
     public String getUid() {

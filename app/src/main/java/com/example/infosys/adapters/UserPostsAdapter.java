@@ -14,65 +14,76 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.example.infosys.R;
 import com.example.infosys.activities.PostActivity;
-import com.example.infosys.managers.UserManager;
+import com.example.infosys.managers.CommunityManager;
 import com.example.infosys.model.Post;
 import com.example.infosys.utils.FirebaseUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.relex.circleindicator.CircleIndicator3;
 
-public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHolder> {
-    private static final String TAG = "PostAdapter";
+public class UserPostsAdapter extends RecyclerView.Adapter<UserPostsAdapter.UserPostViewHolder> {
+    private static final String TAG = "UserPostsAdapter";
     private final List<Post> posts;
-    private final String communityId, communityName;
+    private final String userId;
+    private final Map<String, String> cachedCommunityNames = new HashMap<>(); // ID: Name
 
-    public PostsAdapter(List<Post> posts, String communityId, String communityName, FragmentManager fragmentManager) {
-        Log.d(TAG, "PostsAdapter: Creating PostsAdapter with " + posts.size() + " posts" + ", community ID: " + communityId + ", community name: " + communityName);
+
+    public UserPostsAdapter(List<Post> posts, String userId) {
         this.posts = posts;
-        this.communityId = communityId;
-        this.communityName = communityName;
+        this.userId = userId;
     }
 
     @NonNull
     @Override
-    public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-        return new PostViewHolder(view);
+    public UserPostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_profile_post, parent, false);
+        return new UserPostViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull UserPostViewHolder holder, int position) {
         Post post = posts.get(position);
+
+        String communityName = cachedCommunityNames.get(post.getCommunityId());
+        if (communityName == null) {
+            Log.d(TAG, "onBindViewHolder: Retrieving community name from db");
+            CommunityManager.getInstance().getCommunityName(post.getCommunityId())
+                    .addOnSuccessListener(name -> {
+                        cachedCommunityNames.put(post.getCommunityId(), name);
+                        holder.txtCommunityName.setText(name);
+                        holder.container.setOnClickListener(v -> {
+                            Context context = holder.container.getContext();
+                            PostActivity.start(context, post.getUid(), post.getCommunityId(), name);
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to fetch community name", e);
+                        holder.txtCommunityName.setText("Unknown Community");
+                    });
+        } else {
+            holder.txtCommunityName.setText(communityName);
+        }
+
         holder.title.setText(post.getTitle());
-        holder.username.setText(post.getAuthorName());
         holder.timestamp.setText(FirebaseUtil.timestampToString(post.getDateCreated()));
         holder.content.setText(post.getBody());
-        holder.container.setOnClickListener(v -> {
-            Context context = holder.container.getContext();
-            PostActivity.start(context, post.getUid(), communityId, communityName);
-        });
 
-        UserManager.getInstance().getUserProfilePictureUrl(post.getAuthorId())
-                .addOnSuccessListener(url -> {
-                    Glide.with(holder.itemView.getContext())
-                            .load(url)
-                            .placeholder(R.drawable.ic_profile_placeholder)
-                            .circleCrop()
-                            .into(holder.profileImage);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "onBindViewHolder: Failed to load profile picture", e);
-                    holder.profileImage.setImageResource(R.drawable.ic_profile_placeholder);
-                });
+        // TODO actual images
+        Glide.with(holder.communityImage.getContext())
+                .load(R.drawable.logo)
+                .placeholder(R.drawable.logo)
+                .circleCrop()
+                .into(holder.communityImage);
 
         setupImageCarousel(holder, post.getImageUrls());
     }
@@ -83,7 +94,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void setupImageCarousel(PostViewHolder holder, List<String> urlStringList) {
+    private void setupImageCarousel(UserPostsAdapter.UserPostViewHolder holder, List<String> urlStringList) {
         List<Uri> uriList = new ArrayList<>();
         for (String uri : urlStringList) {
             uriList.add(Uri.parse(uri));
@@ -147,25 +158,26 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
 
     }
 
-    public static class PostViewHolder extends RecyclerView.ViewHolder {
-        TextView title, username, timestamp, content;
-        ImageView profileImage;
-        FrameLayout container;
+    public static class UserPostViewHolder extends RecyclerView.ViewHolder {
+        TextView title, timestamp, content, txtCommunityName;
+        ImageView communityImage;
         ViewPager2 imageCarousel;
-        CircleIndicator3 indicator;
         ConstraintLayout imageCarouselContainer;
+        CircleIndicator3 indicator;
+        FrameLayout container;
 
-        public PostViewHolder(View view) {
+        public UserPostViewHolder(View view) {
             super(view);
-            container = view.findViewById(R.id.post_container);
             title = view.findViewById(R.id.post_title);
-            username = view.findViewById(R.id.post_community_name);
             timestamp = view.findViewById(R.id.post_timestamp);
             content = view.findViewById(R.id.post_content);
-            profileImage = view.findViewById(R.id.post_community_image);
+            txtCommunityName = view.findViewById(R.id.post_community_name);
             imageCarousel = view.findViewById(R.id.image_carousel);
-            indicator = view.findViewById(R.id.image_carousel_indicator);
             imageCarouselContainer = view.findViewById(R.id.image_carousel_container);
+            communityImage = view.findViewById(R.id.post_community_image);
+            indicator = view.findViewById(R.id.image_carousel_indicator);
+            container = view.findViewById(R.id.post_container);
+
         }
     }
 }

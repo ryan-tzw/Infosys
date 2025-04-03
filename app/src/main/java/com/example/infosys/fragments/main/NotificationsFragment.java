@@ -14,7 +14,7 @@ public class NotificationsFragment extends BaseFragment {
         // Required empty public constructor
     }
 
-    public static NotificationsFragment newInstance(String param1, String param2) {
+    public static NotificationsFragment newInstance() {
         NotificationsFragment fragment = new NotificationsFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);

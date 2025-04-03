@@ -16,6 +16,7 @@ import com.example.infosys.fragments.main.CommunitiesFragment;
 import com.example.infosys.fragments.main.HomeFragment;
 import com.example.infosys.fragments.main.NotificationsFragment;
 import com.example.infosys.fragments.main.ProfileFragment;
+import com.example.infosys.utils.FirebaseUtil;
 
 import java.util.Objects;
 
@@ -42,19 +43,19 @@ public class NavFragment extends Fragment {
             String fragmentType = getArguments().getString("fragmentType");
             switch (Objects.requireNonNull(fragmentType)) {
                 case "COMMUNITIES":
-                    fragment = new CommunitiesFragment();
+                    fragment = CommunitiesFragment.newInstance();
                     break;
                 case "NOTIFICATIONS":
-                    fragment = new NotificationsFragment();
+                    fragment = NotificationsFragment.newInstance();
                     break;
                 case "CHATS":
-                    fragment = new ChatsFragment();
+                    fragment = ChatsFragment.newInstance();
                     break;
                 case "PROFILE":
-                    fragment = new ProfileFragment();
+                    fragment = ProfileFragment.newInstance(FirebaseUtil.getCurrentUserUid());
                     break;
                 case "HOME":
-                    fragment = new HomeFragment();
+                    fragment = HomeFragment.newInstance();
                     break;
             }
         }

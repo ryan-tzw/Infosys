@@ -46,7 +46,7 @@
         android:fillViewport="true"
         android:paddingHorizontal="24dp"
         android:paddingVertical="20dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/message_input_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

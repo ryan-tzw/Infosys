@@ -90,7 +90,7 @@ public class CreatePostActivity extends AppCompatActivity {
         String authorName = FirebaseUtil.getCurrentUsername();
 
         // Create a new post object
-        Post post = new Post(uid, title, body, timestamp, authorId, authorName);
+        Post post = new Post(uid, title, body, timestamp, authorId, authorName, communityId);
 
         uploadImagesToFirebase(selectedImageUris)
                 .addOnSuccessListener(imageUrls -> {

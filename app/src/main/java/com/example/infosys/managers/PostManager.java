@@ -42,22 +42,23 @@ public class PostManager {
     }
 
     public void likePost() {
-        Task<Void> updateLikeTask = updateLike(1);
-        Task<Void> addLikedByUserTask = addLikedByUser(userId);
+        updateLike(1);
+        addLikedByUser(userId);
     }
 
     public void removeLike() {
-        Task<Void> updateLikeTask = updateLike(-1);
-        Task<Void> removeLikedByUserTask = removeLikedByUser(userId);
-
+        updateLike(-1);
+        removeLikedByUser(userId);
     }
 
     public void dislikePost() {
         updateDislike(1);
+        addDislikedByUser(userId);
     }
 
     public void removeDislike() {
         updateDislike(-1);
+        removeDislikedByUser(userId);
     }
 
     private Task<Void> updateLike(Integer increment) {
