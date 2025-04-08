@@ -1,15 +1,21 @@
 package com.example.infosys.activities;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -26,6 +32,7 @@ import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -34,6 +41,16 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1;
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permission is granted, proceed with notifications
+                } else {
+                    // Permission denied, inform the user about the necessity of this permission
+                }
+            });
+
     MaterialToolbar topAppBar;
     private Fragment homeFragment, communitiesFragment, notificationsFragment, chatsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
@@ -42,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        requestNotificationPermissionIfNeeded();
 
         MainManager.getInstance().setMainActivity(this);
 
@@ -72,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         overrideBackButton();
-        
+
         initialiseAppBar(topAppBar);
         initialiseFragments();
 
@@ -85,7 +104,37 @@ public class MainActivity extends AppCompatActivity {
                     .addToBackStack(null)
                     .commit();
         }
+
     }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_GRANTED) {
+                getAndSaveFcmToken();
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                Log.d(TAG, "Permission denied before.");
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        } else {
+            getAndSaveFcmToken();
+        }
+    }
+
+
+    private void getAndSaveFcmToken() {
+        Log.d(TAG, "getAndSaveFcmToken: Saving user token");
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token -> {
+                    Log.d(TAG, "onCreate: User token: " + token);
+
+                    // Save the token to Firestore
+                    FirebaseUtil.updateFcmToken(token);
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "onCreate: Failed to get FCM token. ", e));
+    }
+
 
     @Override
     protected void onResume() {
@@ -103,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
             ((ToolbarConfigurable) visibleChild).configureToolbar(toolbar);
         }
     }
+
 
     private FragmentManager getSelectedTabFM() {
         int selectedItemId = bottomNavigationView.getSelectedItemId();

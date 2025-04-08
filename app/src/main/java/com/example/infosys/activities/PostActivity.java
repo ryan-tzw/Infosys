@@ -308,7 +308,8 @@ public class PostActivity extends AppCompatActivity {
 
                 commentManager.addComment(text)
                         .addOnSuccessListener(task -> {
-                            txtCommentCount.setText(String.valueOf(commentCount + 1));
+                            commentCount += 1;
+                            txtCommentCount.setText(String.valueOf(commentCount));
                         })
                         .addOnFailureListener(e -> {
                             Log.e(TAG, "Failed to post comment", e);

@@ -18,6 +18,7 @@ public class User implements Serializable {
     private List<String> interests;
     private String location;
     private Timestamp dateOfBirth;
+    private String fcmToken;
 
     public User() {
     }
@@ -30,8 +31,16 @@ public class User implements Serializable {
         this.friendsList = new ArrayList<>();
         this.communitiesList = new ArrayList<>();
         this.profilePictureUrl = "";
+        this.bio = "";
+        this.interests = new ArrayList<>();
+        this.location = "";
+        this.dateOfBirth = null;
+        this.fcmToken = "";
     }
 
+    public String getFcmToken() {
+        return fcmToken;
+    }
 
     public String getUid() {
         return uid;
@@ -63,6 +72,10 @@ public class User implements Serializable {
 
     public String getProfilePictureUrl() {
         return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
     }
 
     public String getBio() {

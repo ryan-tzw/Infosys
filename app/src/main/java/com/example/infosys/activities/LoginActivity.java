@@ -24,6 +24,7 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
     private TextInputLayout tilEmail, tilPassword;
     private LoginManager loginManager;
     private boolean isAuthCheckComplete = false;
+    private Button btnLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +49,10 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
 
         displayErrors(errors);
 
-        loginManager.loginUser(email, password, this);
+        if (errors.isEmpty()) {
+            btnLogin.setEnabled(false);
+            loginManager.loginUser(email, password, this);
+        }
     }
 
     private void displayErrors(Map<String, String> errors) {
@@ -63,7 +67,7 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
         tilEmail = findViewById(R.id.email_container);
         tilPassword = findViewById(R.id.password_container);
 
-        Button btnLogin = findViewById(R.id.login_button);
+        btnLogin = findViewById(R.id.login_button);
         TextView signUpTextView = findViewById(R.id.register_nav);
 
         btnLogin.setOnClickListener(v -> login());
@@ -77,6 +81,7 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
     @Override
     public void onLoginSuccess() {
         isAuthCheckComplete = true;
+        btnLogin.setEnabled(true);
         Log.d(TAG, "onLoginSuccess: Login successful!");
         AndroidUtil.navigateTo(LoginActivity.this, MainActivity.class);
         finish();
@@ -85,6 +90,7 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
     @Override
     public void onLoginFailure(Exception e) {
         isAuthCheckComplete = true;
+        btnLogin.setEnabled(true);
         Log.e(TAG, "onLoginFailure: ", e);
     }
 }

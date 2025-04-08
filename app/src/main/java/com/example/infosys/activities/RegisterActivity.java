@@ -22,6 +22,7 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
     private EditText edtEmail, edtUsername, edtPassword, edtConfirmPassword;
     private TextInputLayout tilEmail, tilUsername, tilPassword, tilConfirmPassword;
     private RegisterManager registerManager;
+    private Button btnRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,7 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
         displayErrors(errors);
 
         if (errors.isEmpty()) {
+            btnRegister.setEnabled(false);
             registerManager.registerUser(email, username, password, this, this);
         }
     }
@@ -67,7 +69,7 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
         tilPassword = findViewById(R.id.password_container);
         tilConfirmPassword = findViewById(R.id.password_confirm_container);
 
-        Button btnRegister = findViewById(R.id.register_button);
+        btnRegister = findViewById(R.id.register_button);
         TextView loginTextView = findViewById(R.id.login_nav);
 
         btnRegister.setOnClickListener(v -> register());

@@ -6,6 +6,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -27,6 +28,7 @@ import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
 import com.example.infosys.model.Message;
 import com.example.infosys.utils.FirebaseUtil;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentChange;
@@ -41,7 +43,7 @@ public class ChatActivity extends AppCompatActivity {
     private static final String TAG = "ChatActivity";
     MaterialToolbar toolbar;
     EditText inputMessage;
-    ImageButton sendButton;
+    ImageButton sendButton, scrollToBottomButton;
     String currentUserId, chatId, groupName;
     ChatManager chatManager;
     RecyclerView messageRecyclerView;
@@ -158,7 +160,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void sendMessage() {
         String msgText = inputMessage.getText().toString().trim();
-        messagesManager.sendMessage(msgText);
+        Task<Void> sendMessageTask = messagesManager.sendMessage(msgText);
         sendButton.setEnabled(false);
         inputMessage.setText("");
     }
@@ -180,6 +182,7 @@ public class ChatActivity extends AppCompatActivity {
         inputMessage = findViewById(R.id.input_message);
         sendButton = findViewById(R.id.comment_send_button);
         messageRecyclerView = findViewById(R.id.chat_recycler_view);
+        scrollToBottomButton = findViewById(R.id.scroll_to_bottom_button);
 
         setSupportActionBar(toolbar);
 
@@ -200,6 +203,9 @@ public class ChatActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
+
+        scrollToBottomButton.setOnClickListener(v -> messageRecyclerView.smoothScrollToPosition(0));
+        scrollToBottomButton.setVisibility(View.GONE);
     }
 
     private void setupRecyclerView() {
@@ -221,6 +227,12 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!isUserAtBottom()) {
+                    scrollToBottomButton.setVisibility(View.VISIBLE);
+                } else {
+                    scrollToBottomButton.setVisibility(View.GONE);
+                }
+
                 if (!recyclerView.canScrollVertically(-1) && hasUserScrolled && !isLoadingMore) {
                     hasUserScrolled = false;
                     loadMoreMessages();

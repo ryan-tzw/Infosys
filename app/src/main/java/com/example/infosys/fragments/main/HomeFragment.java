@@ -9,9 +9,15 @@ import android.widget.Button;
 
 import com.example.infosys.R;
 import com.example.infosys.fragments.main.common.BaseFragment;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.example.infosys.model.Notification;
+import com.example.infosys.utils.FirebaseUtil;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 
 public class HomeFragment extends BaseFragment {
@@ -37,41 +43,60 @@ public class HomeFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        testButton(view);
+
+        return view;
+    }
+
+    private void testButton(View view) {
         // test button on click listener
         Button testButton = view.findViewById(R.id.test_button);
         testButton.setOnClickListener(v -> {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
+            String currentUserId = FirebaseUtil.getCurrentUserUid();
 
-            db.collection("communities").get().addOnSuccessListener(communitiesSnapshot -> {
-                for (QueryDocumentSnapshot communityDoc : communitiesSnapshot) {
-                    String communityId = communityDoc.getId();
+            assert currentUserId != null;
+            CollectionReference notificationRef = db.collection("users").document(currentUserId).collection("notifications");
 
-                    db.collection("communities")
-                            .document(communityId)
-                            .collection("posts")
-                            .get()
-                            .addOnSuccessListener(postsSnapshot -> {
-                                for (DocumentSnapshot postDoc : postsSnapshot) {
-                                    postDoc.getReference().update("communityId", communityId)
-                                            .addOnSuccessListener(aVoid -> {
-                                                Log.d("UpdatePosts", "✅ Updated post " + postDoc.getId());
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                Log.e("UpdatePosts", "❌ Failed to update post " + postDoc.getId(), e);
-                                            });
-                                }
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("UpdatePosts", "❌ Failed to get posts for community " + communityId, e);
-                            });
-                }
-            }).addOnFailureListener(e -> {
-                Log.e("UpdatePosts", "❌ Failed to get communities", e);
-            });
+            List<Notification> testNotifications = new ArrayList<>();
+            testNotifications.add(new Notification(
+                    UUID.randomUUID().toString(),
+                    "Alex",
+                    "New post in Community",
+                    "Check out Alex's latest post on UI design trends!",
+                    "https://i.pravatar.cc/150?img=7",
+                    "post",
+                    "post123",
+                    Timestamp.now()
+            ));
+            testNotifications.add(new Notification(
+                    UUID.randomUUID().toString(),
+                    "Jamie",
+                    "New message from Jamie",
+                    "Hey, are you free to review my PR today?",
+                    "https://i.pravatar.cc/150?img=8",
+                    "message",
+                    "chat456",
+                    Timestamp.now()
+            ));
+            testNotifications.add(new Notification(
+                    UUID.randomUUID().toString(),
+                    "Casey",
+                    "New post in Community",
+                    "Casey just shared a tutorial on Android RecyclerViews!",
+                    "https://i.pravatar.cc/150?img=9",
+                    "post",
+                    "post789",
+                    Timestamp.now()
+            ));
 
+            for (Notification n : testNotifications) {
+                notificationRef.document(n.getId()).set(n)
+                        .addOnSuccessListener(aVoid -> Log.d("TEST_NOTIF", "✅ Added notification: " + n.getTitle()))
+                        .addOnFailureListener(e -> Log.e("TEST_NOTIF", "❌ Failed to add notification", e));
+            }
 
         });
-
-        return view;
     }
 }
+

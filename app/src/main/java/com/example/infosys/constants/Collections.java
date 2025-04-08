@@ -15,6 +15,7 @@ public class Collections {
     public static class Users {
         public static final String LIKED_POSTS = "likedPosts";
         public static final String DISLIKED_POSTS = "dislikedPosts";
+        public static final String NOTIFICATIONS = "notifications";
     }
 
     public static class Communities {

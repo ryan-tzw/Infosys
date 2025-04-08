@@ -93,8 +93,13 @@ public class RegisterManager {
                     FirebaseUser user = mAuth.getCurrentUser();
                     if (user != null) {
                         sendVerificationEmail(user);
+
+                        User userObject = new User(user.getUid(), username, email);
+                        // Set default profile picture
+                        userObject.setProfilePictureUrl("https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541");
+
                         db.collection(USER_COLLECTION).document(user.getUid())
-                                .set(new User(user.getUid(), username, email))
+                                .set(userObject)
                                 .addOnSuccessListener(aVoid -> callback.onRegistrationSuccess())
                                 .addOnFailureListener(e -> Log.e(TAG, "registerUser: Failed to add user to Firestore: ", e));
                     }

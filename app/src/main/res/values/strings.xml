@@ -47,4 +47,5 @@
     <string name="add_a_post_to_the_community">Add a post to the community</string>
     <string name="recent">Recent</string>
     <string name="popular">Popular</string>
+    <string name="default_notification_channel_id">default_channel</string>
 </resources>

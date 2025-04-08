@@ -59,5 +59,10 @@ dependencies {
     implementation(libs.android.image.picker)
     implementation(libs.circleindicator)
     implementation(libs.firebase.ui.firestore)
+    implementation(libs.recyclerview.swipedecorator)
+    implementation(libs.firebase.inappmessaging.display)
+    implementation(libs.firebase.analytics)
+    implementation(libs.okhttp)
+
 
 }

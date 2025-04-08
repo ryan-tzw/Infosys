@@ -30,6 +30,7 @@ public abstract class BaseFragment extends Fragment implements ToolbarConfigurab
         configureToolbar(toolbar);
     }
 
+    @Override
     public void configureToolbar(MaterialToolbar toolbar) {
         Log.d(TAG, "configureToolbar: ");
         if (MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).getBackStackEntryCount() == 0) {
