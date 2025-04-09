@@ -72,6 +72,8 @@ public class LoginActivity extends AppCompatActivity implements LoginCallback {
 
         btnLogin.setOnClickListener(v -> login());
         signUpTextView.setOnClickListener(v -> navigateToRegister());
+
+        AndroidUtil.setupPasswordToggle(edtPassword);
     }
 
     private void navigateToRegister() {

@@ -1,10 +1,14 @@
 package com.example.infosys.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -74,6 +78,38 @@ public class AndroidUtil {
             return insets;
         });
 
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    public static void setupPasswordToggle(EditText passwordEditText) {
+        passwordEditText.setOnTouchListener((v, event) -> {
+            final int DRAWABLE_RIGHT = 2;
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (passwordEditText.getCompoundDrawables()[DRAWABLE_RIGHT] != null) {
+                    int drawableWidth = passwordEditText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width();
+                    int touchX = (int) event.getX();
+                    int width = passwordEditText.getWidth();
+                    if (touchX >= (width - passwordEditText.getPaddingRight() - drawableWidth)) {
+
+                        v.performClick(); // to resolve the lint warning
+
+                        // Toggle visibility
+                        if ((passwordEditText.getInputType() & InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                                == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                            passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            passwordEditText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_closed, 0);
+                        } else {
+                            passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                            passwordEditText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_open, 0);
+                        }
+
+                        passwordEditText.setSelection(passwordEditText.getText().length());
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
     }
 
 }
