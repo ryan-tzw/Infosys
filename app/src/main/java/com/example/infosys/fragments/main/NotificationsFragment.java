@@ -235,13 +235,9 @@ public class NotificationsFragment extends BaseFragment {
 
     private void handleNotificationClick(Notification notification) {
         if (notification.getType().equals("post")) {
-            Intent intent = new Intent(getContext(), PostActivity.class);
-            intent.putExtra("postId", notification.getReferenceId());
-            startActivity(intent);
+            openChat(notification.getChatId());
         } else if (notification.getType().equals("message")) {
-            Intent intent = new Intent(getContext(), ChatActivity.class);
-            intent.putExtra("chatId", notification.getReferenceId());
-            startActivity(intent);
+            openPostFromNotification(notification.getPostId(), notification.getCommunityId(), notification.getCommunityName());
         }
 
         // Mark as read
@@ -250,5 +246,19 @@ public class NotificationsFragment extends BaseFragment {
                 .collection("notifications")
                 .document(notification.getId())
                 .update("read", true);
+    }
+
+    private void openChat(String chatId) {
+        Intent chatIntent = new Intent(requireContext(), ChatActivity.class);
+        chatIntent.putExtra("chatId", chatId);
+        startActivity(chatIntent);
+    }
+
+    private void openPostFromNotification(String postId, String communityId, String communityName) {
+        Intent postIntent = new Intent(requireContext(), PostActivity.class);
+        postIntent.putExtra("postId", postId);
+        postIntent.putExtra("communityId", communityId);
+        postIntent.putExtra("communityName", communityName);
+        startActivity(postIntent);
     }
 }

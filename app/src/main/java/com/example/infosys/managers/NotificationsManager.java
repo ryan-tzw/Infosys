@@ -40,48 +40,7 @@ public class NotificationsManager {
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to mark notification", e));
     }
 
-    public void sendPostNotificationToCommunity(
-            @NonNull String communityId,
-            @NonNull String communityName,
-            @NonNull String authorId,
-            @NonNull String authorUsername,
-            @NonNull String authorProfileImageUrl,
-            @NonNull String postId,
-            @NonNull String postContent
-    ) {
-        db.collection("communities")
-                .document(communityId)
-                .collection("members")
-                .get()
-                .addOnSuccessListener(query -> {
-                    for (var doc : query.getDocuments()) {
-                        String memberId = doc.getId();
-
-                        // Skip the author themselves
-                        if (memberId.equals(authorId)) continue;
-
-                        Notification notification = new Notification(
-                                UUID.randomUUID().toString(),
-                                authorUsername,
-                                authorUsername + " posted in: " + communityName,
-                                postContent.length() > 80 ? postContent.substring(0, 80) + "..." : postContent,
-                                authorProfileImageUrl,
-                                "post",
-                                postId,
-                                Timestamp.now()
-                        );
-
-                        db.collection("users")
-                                .document(memberId)
-                                .collection("notifications")
-                                .document(notification.getId())
-                                .set(notification);
-                    }
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to get community members", e));
-    }
-
-    public Task<Void> sendCommentNotification(String postCreatorId, Comment comment, String communityName) {
+    public Task<Void> sendCommentNotification(String postCreatorId, Comment comment, String communityId, String communityName, String postId) {
         String notificationTitle = comment.getAuthorName() + " commented on your post in " + communityName;
         String notificationContent = comment.getText();
 
@@ -98,16 +57,18 @@ public class NotificationsManager {
                     }
                 });
 
-        return profilePicUrlTask.onSuccessTask(uriString -> {
-            Notification notification = new Notification(
+        return profilePicUrlTask.onSuccessTask(profilePicUriString -> {
+            Notification notification = Notification.createCommentNotification(
                     UUID.randomUUID().toString(),
                     comment.getAuthorName(),
                     notificationTitle,
                     notificationContent,
-                    uriString,
+                    profilePicUriString,
                     "comment",
-                    comment.getAuthorId(),
-                    Timestamp.now()
+                    Timestamp.now(),
+                    postId,
+                    communityId,
+                    communityName
             );
 
             return FirebaseFirestore.getInstance()
@@ -125,18 +86,17 @@ public class NotificationsManager {
             @NonNull String receiverId,
             @NonNull String senderUsername,
             @NonNull String senderProfileImageUrl,
-            @NonNull String messageId,
             @NonNull String messageContent
     ) {
-        Notification notification = new Notification(
+        Notification notification = Notification.createMessageNotification(
                 UUID.randomUUID().toString(),
                 senderUsername,
                 "New message from " + senderUsername,
-                messageContent.length() > 80 ? messageContent.substring(0, 80) + "..." : messageContent,
+                messageContent,
                 senderProfileImageUrl,
                 "message",
-                messageId,
-                Timestamp.now()
+                Timestamp.now(),
+                chatId
         );
 
         return db.collection("users")

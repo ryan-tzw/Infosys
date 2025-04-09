@@ -84,7 +84,7 @@ public class MessagesManager {
                             Task<Void> notificationTask = NotificationsManager
                                     .getInstance()
                                     .sendMessageNotification(
-                                            chatId, userId, senderUsername, profilePicUrl, messageId, message.getBody()
+                                            chatId, userId, senderUsername, profilePicUrl, message.getBody()
                                     );
 
                             notificationTask.addOnFailureListener(e -> Log.e(TAG, "Failed to send notification to " + userId, e));

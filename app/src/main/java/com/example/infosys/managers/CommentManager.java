@@ -22,7 +22,7 @@ public class CommentManager {
 
     private final CollectionReference commentsCollection;
     private final DocumentReference postDocumentReference;
-    private String communityId;
+    private final String communityId;
 
     public CommentManager(String communityId, String postId) {
         this.communityId = communityId;
@@ -71,13 +71,14 @@ public class CommentManager {
 
                     String communityName = communityDocument.getString("name");
                     String postAuthorId = postDocument.getString("authorId");
+                    String postId = postDocument.getId();
 
                     Log.d(TAG, "addComment: Community Name: " + communityName);
                     Log.d(TAG, "addComment: " + postAuthorId + " " + commentAuthorId);
 
                     if (postAuthorId != null && !postAuthorId.equals(commentAuthorId)) {
                         Log.d(TAG, "addComment: Sending notification to post creator: " + postAuthorId);
-                        return NotificationsManager.getInstance().sendCommentNotification(postAuthorId, comment, communityName);
+                        return NotificationsManager.getInstance().sendCommentNotification(postAuthorId, comment, communityId, communityName, postId);
                     } else {
                         return Tasks.forResult(null);
                     }

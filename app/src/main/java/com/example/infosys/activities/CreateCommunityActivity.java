@@ -53,6 +53,7 @@ public class CreateCommunityActivity extends AppCompatActivity {
         finish();
 
         Intent intent = new Intent(CreateCommunityActivity.this, MainActivity.class);
+        intent.putExtra("newCommunity", true);
         intent.putExtra("communityId", communityId);
 
         startActivity(intent);

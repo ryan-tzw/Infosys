@@ -1,6 +1,7 @@
 package com.example.infosys.activities;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.d(TAG, "onCreate called");
+
         requestNotificationPermissionIfNeeded();
 
         MainManager.getInstance().setMainActivity(this);
@@ -95,17 +98,68 @@ public class MainActivity extends AppCompatActivity {
         initialiseAppBar(topAppBar);
         initialiseFragments();
 
-        String communityId = getIntent().getStringExtra("communityId");
-        if (communityId != null) {
-            bottomNavigationView.setSelectedItemId(R.id.nav_communities);
-            CommunityFragment fragment = CommunityFragment.newInstance(communityId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container_view, fragment)
-                    .addToBackStack(null)
-                    .commit();
+
+        handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        Log.d(TAG, "onNewIntent: New Intent: " + intent);
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+
+        // When the app is opened from a notification, handle the notification
+        if (intent.hasExtra("notification_type")) {
+            String type = intent.getStringExtra("notification_type");
+
+            Log.d(TAG, "handleIntent: App opened from notification, type: " + type);
+
+            if ("message".equals(type)) {
+                String chatId = intent.getStringExtra("chatId");
+                openChat(chatId);
+            } else if ("comment".equals(type)) {
+                String postId = intent.getStringExtra("postId");
+                String communityId = intent.getStringExtra("communityId");
+                String communityName = intent.getStringExtra("communityName");
+                openPostFromNotification(postId, communityId, communityName);
+            }
         }
 
+        // When a new community is created, navigate to the community fragment
+        if (intent.hasExtra("newCommunity")) {
+            boolean newCommunity = intent.getBooleanExtra("newCommunity", false);
+            if (newCommunity) {
+                Log.d(TAG, "handleIntent: New community created, navigating to it");
+                String communityId = getIntent().getStringExtra("communityId");
+
+                bottomNavigationView.setSelectedItemId(R.id.nav_communities);
+                CommunityFragment fragment = CommunityFragment.newInstance(communityId);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container_view, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        }
     }
+
+    private void openChat(String chatId) {
+        Intent chatIntent = new Intent(this, ChatActivity.class);
+        chatIntent.putExtra("chatId", chatId);
+        startActivity(chatIntent);
+    }
+
+    private void openPostFromNotification(String postId, String communityId, String communityName) {
+        Intent postIntent = new Intent(this, PostActivity.class);
+        postIntent.putExtra("postId", postId);
+        postIntent.putExtra("communityId", communityId);
+        postIntent.putExtra("communityName", communityName);
+        startActivity(postIntent);
+    }
+
 
     private void requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -139,6 +193,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        Log.d(TAG, "onResume called");
 
         MaterialToolbar toolbar = findViewById(R.id.app_bar);
 
