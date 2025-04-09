@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import com.google.firebase.firestore.GeoPoint;
+
 
 public class User implements Serializable {
     private String uid;
@@ -16,9 +18,9 @@ public class User implements Serializable {
     private List<String> communitiesList;
     private String bio;
     private List<String> interests;
-    private String location;
     private Timestamp dateOfBirth;
     private String fcmToken;
+    private GeoPoint location;
 
     public User() {
     }
@@ -33,7 +35,7 @@ public class User implements Serializable {
         this.profilePictureUrl = "";
         this.bio = "";
         this.interests = new ArrayList<>();
-        this.location = "";
+        this.location = null;
         this.dateOfBirth = null;
         this.fcmToken = "";
     }
@@ -86,8 +88,10 @@ public class User implements Serializable {
         return interests;
     }
 
-    public String getLocation() {
-        return location;
+    public GeoPoint getLocation() { return location; }
+
+    public void setLocation(GeoPoint location){
+        this.location = location;
     }
 
     public Timestamp getDateOfBirth() {

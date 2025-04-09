@@ -116,6 +116,12 @@ public class ProfileFragment extends BaseFragment {
             swipeRefreshLayout.setRefreshing(false);
         });
 
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation();
+        }
 
         return view;
     }
@@ -339,8 +345,8 @@ public class ProfileFragment extends BaseFragment {
                                 detailedLocation += postalCode != null ? ", " + postalCode : "";
 
                                 locationText = "Location: " + detailedLocation;
-                                //GeoPoint geoPoint = new GeoPoint(latitude, longitude);
-                                //FirebaseUtil.updateUserField("location", geoPoint, requireContext());
+                                GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+                                FirebaseUtil.updateUserField("location", geoPoint, requireContext());
                             }
                         } catch (IOException e) {
                             e.printStackTrace();

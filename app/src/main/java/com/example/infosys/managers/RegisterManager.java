@@ -98,6 +98,7 @@ public class RegisterManager {
                         // Set default profile picture
                         userObject.setProfilePictureUrl("https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541");
 
+
                         db.collection(USER_COLLECTION).document(user.getUid())
                                 .set(userObject)
                                 .addOnSuccessListener(aVoid -> callback.onRegistrationSuccess())
