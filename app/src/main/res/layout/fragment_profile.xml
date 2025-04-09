@@ -160,11 +160,11 @@
                         app:tint="@color/red" />
 
                     <TextView
+                        android:id="@+id/displayLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Location"
-                        app:layout_constraintBottom_toBottomOf="@id/location_icon"
                         app:layout_constraintStart_toEndOf="@id/location_icon"
                         app:layout_constraintTop_toTopOf="@id/location_icon" />
 

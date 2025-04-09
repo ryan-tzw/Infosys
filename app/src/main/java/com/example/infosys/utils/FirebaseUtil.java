@@ -1,5 +1,6 @@
 package com.example.infosys.utils;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.example.infosys.constants.Collections;
@@ -10,6 +11,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -46,6 +48,17 @@ public class FirebaseUtil {
 
     public static String getCurrentUsername() {
         return UserManager.getInstance().getCurrentUserName();
+    }
+
+    public static DocumentReference currentUserDetails(){
+        return FirebaseFirestore.getInstance().collection("users").document(getCurrentUserUid());
+    }
+
+    public static void updateUserField(String field, Object value, Context context) {
+        currentUserDetails()
+                .update(field, value)
+                .addOnSuccessListener(aVoid -> AndroidUtil.showToast(context, field + " updated successfully"))
+                .addOnFailureListener(e -> AndroidUtil.showToast(context, "Failed to update " + field + ": " + e.getMessage()));
     }
 
     public static void getCurrentUser(UsernameCallback callback) {

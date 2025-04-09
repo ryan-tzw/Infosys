@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.firebase.inappmessaging.display)
     implementation(libs.firebase.analytics)
     implementation(libs.okhttp)
+    implementation (libs.play.services.location)
 
 
 }
