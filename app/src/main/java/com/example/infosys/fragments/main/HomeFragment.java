@@ -33,16 +33,8 @@ public class HomeFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        testButton(view);
-
         return view;
     }
 
-    private void testButton(View view) {
-        // test button on click listener
-        Button testButton = view.findViewById(R.id.test_button);
-        testButton.setOnClickListener(v -> {
-        });
-    }
 }
 
