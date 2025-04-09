@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
     MaterialToolbar topAppBar;
+
     private Fragment homeFragment, communitiesFragment, notificationsFragment, chatsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
 
@@ -70,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setItemIconTintList(null);
         topAppBar = findViewById(R.id.app_bar);
+
+        AndroidUtil.setToolbarPadding(topAppBar);
 
         Log.d(TAG, "onCreate: Retrieving and converting profile picture to drawable bitmap");
         StorageReference profilePictureReference = FirebaseStorage.getInstance().getReference().child("profile_pictures/").child(Objects.requireNonNull(FirebaseUtil.getCurrentUserUid()));

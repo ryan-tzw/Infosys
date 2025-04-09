@@ -24,7 +24,6 @@ public class NotificationRedirectActivity extends AppCompatActivity {
         mainIntent.putExtra("notification_type", type);
         mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        // 🌀 Use switch to pass type-specific extras
         switch (Objects.requireNonNull(type)) {
             case "message":
                 mainIntent.putExtra("chatId", originalIntent.getStringExtra("chatId"));

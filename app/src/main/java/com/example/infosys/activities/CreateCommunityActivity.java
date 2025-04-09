@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.infosys.R;
 import com.example.infosys.managers.CommunityManager;
 import com.example.infosys.model.Community;
+import com.example.infosys.utils.AndroidUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -36,6 +37,8 @@ public class CreateCommunityActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.app_bar);
         toolbar.setNavigationIcon(R.drawable.ic_back);
         toolbar.setNavigationOnClickListener(v -> finish());
+
+        AndroidUtil.setToolbarPadding(toolbar);
 
         instantiateViews();
     }

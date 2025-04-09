@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -60,6 +62,18 @@ public class AndroidUtil {
                 .fallback(R.drawable.logo)
                 .apply(RequestOptions.circleCropTransform())
                 .into(imageView);
+    }
+
+    public static void setToolbarPadding(View view) {
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            int adjustedPadding = (int) (topInset * 0.5);
+
+            v.setPadding(v.getPaddingLeft(), adjustedPadding, v.getPaddingRight(), v.getPaddingBottom());
+
+            return insets;
+        });
+
     }
 
 }

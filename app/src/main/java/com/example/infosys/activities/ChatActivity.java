@@ -27,6 +27,7 @@ import com.example.infosys.managers.MessagesManager;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
 import com.example.infosys.model.Message;
+import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -64,6 +65,8 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        
+        AndroidUtil.setToolbarPadding(findViewById(R.id.app_bar));
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
