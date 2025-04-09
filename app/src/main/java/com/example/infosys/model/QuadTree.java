@@ -3,20 +3,20 @@ package com.example.infosys.model;
 import java.util.ArrayList;
 import java.util.List;
 
-class QuadTree {
-    Rect boundary;
+public class QuadTree {
+    GeoRect boundary;
     int capacity;
     List<Point> points;
     boolean divided = false;
     QuadTree northeast, northwest, southeast, southwest;
 
-    QuadTree(Rect boundary, int capacity) {
+    public QuadTree(GeoRect boundary, int capacity) {
         this.boundary = boundary;
         this.capacity = capacity;
         this.points = new ArrayList<>();
     }
 
-    boolean insert(Point point) {
+    public boolean insert(Point point) {
         if (!boundary.contains(point)) return false;
 
         if (points.size() < capacity) {
@@ -33,15 +33,15 @@ class QuadTree {
         double midX = (boundary.xMin + boundary.xMax) / 2;
         double midY = (boundary.yMin + boundary.yMax) / 2;
 
-        northeast = new QuadTree(new Rect(midX, boundary.yMin, boundary.xMax, midY), capacity);
-        northwest = new QuadTree(new Rect(boundary.xMin, boundary.yMin, midX, midY), capacity);
-        southeast = new QuadTree(new Rect(midX, midY, boundary.xMax, boundary.yMax), capacity);
-        southwest = new QuadTree(new Rect(boundary.xMin, midY, midX, boundary.yMax), capacity);
+        northeast = new QuadTree(new GeoRect(midX, boundary.yMin, boundary.xMax, midY), capacity);
+        northwest = new QuadTree(new GeoRect(boundary.xMin, boundary.yMin, midX, midY), capacity);
+        southeast = new QuadTree(new GeoRect(midX, midY, boundary.xMax, boundary.yMax), capacity);
+        southwest = new QuadTree(new GeoRect(boundary.xMin, midY, midX, boundary.yMax), capacity);
 
         divided = true;
     }
 
-    List<Point> query(Rect range, List<Point> found) {
+    List<Point> query(GeoRect range, List<Point> found) {
         if (!boundary.intersects(range)) return found;
 
         for (Point p : points) {

@@ -1,9 +1,9 @@
 package com.example.infosys.model;
 
-class Rect {
+public class GeoRect {
     double xMin, yMin, xMax, yMax;
 
-    Rect(double xMin, double yMin, double xMax, double yMax) {
+    public GeoRect(double xMin, double yMin, double xMax, double yMax) {
         this.xMin = xMin;
         this.yMin = yMin;
         this.xMax = xMax;
@@ -14,7 +14,7 @@ class Rect {
         return (p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax);
     }
 
-    boolean intersects(Rect other) {
+    boolean intersects(GeoRect other) {
         return !(other.xMin > xMax || other.xMax < xMin || other.yMin > yMax || other.yMax < yMin);
     }
 }
