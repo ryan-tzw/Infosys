@@ -56,6 +56,25 @@ public class FirebaseUtil {
         return FirebaseFirestore.getInstance().collection("users").document(getCurrentUserUid());
     }
 
+    public static Task<User> getUserDetails(String uid) {
+        return FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().exists()) {
+                            return task.getResult().toObject(User.class);
+                        } else {
+                            throw new Exception("User not found");
+                        }
+                    } else {
+                        throw task.getException() != null ? task.getException() :
+                                new Exception("Error fetching user details");
+                    }
+                });
+    }
+
     public static void updateUserField(String field, Object value, Context context) {
         currentUserDetails()
                 .update(field, value)

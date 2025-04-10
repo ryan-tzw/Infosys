@@ -71,6 +71,9 @@
             android:name=".activities.NotificationRedirectActivity"
             android:exported="true"
             android:theme="@style/Theme.PlayCore.Transparent" />
+        <activity
+            android:name=".activities.ViewProfilesActivity"
+            android:exported="true"/>
 
         <service
             android:name=".services.LocationService"

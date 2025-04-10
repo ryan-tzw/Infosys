@@ -104,6 +104,8 @@ public class HomeFragment extends BaseFragment {
         Log.d("HomeFragment", "RecyclerView and Adapter set");
 
         getCurrentUserGeoPointAndFindNearbyUsers();
+
+        setupSwipeToRefresh(view);
     }
 
     public void getCurrentUserGeoPointAndFindNearbyUsers() {
