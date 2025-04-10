@@ -69,6 +69,8 @@ public class HomeFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d("HomeFragment", "onViewCreated called");
 
+        setupSwipeToRefresh(view);
+
         // Initialize views
         communityViewPager = view.findViewById(R.id.communityViewPager);
         dotIndicator = view.findViewById(R.id.dotIndicator);
