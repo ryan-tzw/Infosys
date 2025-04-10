@@ -75,9 +75,7 @@ public class NotificationsFragment extends BaseFragment {
         recyclerView = view.findViewById(R.id.notifications_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new NotificationsAdapter(notifications, getContext(), notification -> {
-            handleNotificationClick(notification);
-        });
+        adapter = new NotificationsAdapter(notifications, getContext(), this::handleNotificationClick);
 
         recyclerView.setAdapter(adapter);
 
@@ -234,9 +232,9 @@ public class NotificationsFragment extends BaseFragment {
 
 
     private void handleNotificationClick(Notification notification) {
-        if (notification.getType().equals("post")) {
+        if (notification.getType().equals("message")) {
             openChat(notification.getChatId());
-        } else if (notification.getType().equals("message")) {
+        } else if (notification.getType().equals("post")) {
             openPostFromNotification(notification.getPostId(), notification.getCommunityId(), notification.getCommunityName());
         }
 
