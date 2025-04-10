@@ -33,6 +33,7 @@ import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -42,13 +43,17 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1;
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    // Permission is granted, proceed with notifications
+                    getAndSaveFcmToken();
                 } else {
-                    // Permission denied, inform the user about the necessity of this permission
+                    Log.d(TAG, "Notification permission denied");
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("Notification Permission Denied")
+                            .setMessage("Notification permission denied. You will not receive push notifications, but will still be able to view in-app notifications.")
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .show();
                 }
             });
 
