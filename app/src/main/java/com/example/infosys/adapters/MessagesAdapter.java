@@ -48,12 +48,24 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         holder.messageText.setText(message.getBody());
 
         boolean isLastFromUser = true;
+
         if (position > 0) {
             Message nextMessage = messages.get(position - 1);
-            if (nextMessage.getSenderId().equals(message.getSenderId())) {
+
+            boolean sameSender = nextMessage.getSenderId().equals(message.getSenderId());
+            boolean withinTimeWindow = false;
+
+            if (nextMessage.getTimestamp() != null && message.getTimestamp() != null) {
+                long diffMillis = Math.abs(message.getTimestamp().toDate().getTime() - nextMessage.getTimestamp().toDate().getTime());
+                withinTimeWindow = diffMillis <= (10 * 60 * 1000); // 10 minutes
+            }
+
+            // If it's the same sender and sent within 10 minutes, don't show profile/timestamp
+            if (sameSender && withinTimeWindow) {
                 isLastFromUser = false;
             }
         }
+
 
         // If this message is the last in a sequence from the same user, show the timestamp
         // If it is ALSO a received message, show the profile image
