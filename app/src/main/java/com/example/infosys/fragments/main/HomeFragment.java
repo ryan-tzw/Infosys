@@ -81,12 +81,13 @@ public class HomeFragment extends BaseFragment {
         // Setup RecyclerView
         nearbyUsersList = new ArrayList<>();
         userItemAdapter = new UserItemAdapter(nearbyUsersList, getContext());
-        nearbyUsersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        nearbyUsersRecyclerView.setAdapter(userItemAdapter);
 
         // Attach snap helper for dot pagination
         SnapHelper snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(nearbyUsersRecyclerView);
+
+        nearbyUsersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        nearbyUsersRecyclerView.setAdapter(userItemAdapter);
 
         nearbyUsersRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
