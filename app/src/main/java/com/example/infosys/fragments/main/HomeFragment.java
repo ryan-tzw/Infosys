@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.SnapHelper;
 import com.example.infosys.R;
 import com.example.infosys.adapters.UserItemAdapter;
 import com.example.infosys.fragments.main.common.BaseFragment;
+import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.GeoRect;
 import com.example.infosys.model.Point;
 import com.example.infosys.model.QuadTree;
@@ -35,10 +37,11 @@ import java.util.Map;
 
 public class HomeFragment extends BaseFragment {
 
+    private static final String TAG = "Home Fragment";
     private RecyclerView nearbyUsersRecyclerView;
     private UserItemAdapter userItemAdapter;
     private List<User> nearbyUsersList;
-
+    private SwipeRefreshLayout swipeRefreshLayout;
     private ViewPager2 communityViewPager;
     private LinearLayout dotIndicator;
 
@@ -95,18 +98,22 @@ public class HomeFragment extends BaseFragment {
 
         Log.d("HomeFragment", "RecyclerView and Adapter set");
 
+        getCurrentUserGeoPointAndFindNearbyUsers();
+    }
+
+    public void getCurrentUserGeoPointAndFindNearbyUsers() {
         FirebaseUtil.getCurrentUserGeoPoint(new FirebaseUtil.GeoPointCallback() {
             @Override
             public void onGeoPointRetrieved(GeoPoint geoPoint) {
                 findNearbyUsers(geoPoint.getLatitude(), geoPoint.getLongitude());
             }
+
             @Override
             public void onError(String error) {
                 Log.d("HomeFragment", "Error retrieving GeoPoint " + error);
             }
         });
     }
-
 
     private void findNearbyUsers(double latitude, double longitude) {
         Log.d("HomeFragment", "findNearbyUsers called with latitude: " + latitude + ", longitude: " + longitude);
@@ -190,4 +197,19 @@ public class HomeFragment extends BaseFragment {
         }
     }
 
+    private void setupSwipeToRefresh(View view) {
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // Reload profile data
+            UserManager.getInstance().getUser(FirebaseUtil.getCurrentUserUid())
+                    .addOnSuccessListener(user -> {
+                        getCurrentUserGeoPointAndFindNearbyUsers();
+                        swipeRefreshLayout.setRefreshing(false); // Stop refreshing indicator
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to get user data during refresh", e);
+                        swipeRefreshLayout.setRefreshing(false); // Stop refreshing indicator in case of failure
+                    });
+        });
+    }
 }
