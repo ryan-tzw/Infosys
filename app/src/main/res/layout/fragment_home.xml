@@ -1,59 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipe_refresh_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp">
+    tools:context=".fragments.main.ProfileFragment">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:padding="8dp">
 
-        <!-- Recommended Communities -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Recommended Communities"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingVertical="8dp" />
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/communityViewPager"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:clipToPadding="false"
-            android:paddingEnd="32dp"
-            android:paddingStart="32dp" />
-
-        <!-- Similar People Nearby -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Similar People Nearby"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingVertical="8dp" />
-
-        <!-- RecyclerView for Nearby Users -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/nearbyUsersRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:orientation="horizontal"
-            android:clipToPadding="false"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingVertical="8dp"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Dot indicator placeholder (below the RecyclerView) -->
         <LinearLayout
-            android:id="@+id/dotIndicator"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center"
-            android:paddingVertical="8dp" />
-    </LinearLayout>
-</ScrollView>
+            android:orientation="vertical">
+
+            <!-- Recommended Communities -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recommended Communities"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingVertical="8dp" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/communityViewPager"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:clipToPadding="false"
+                android:paddingEnd="32dp"
+                android:paddingStart="32dp" />
+
+            <!-- Similar People Nearby -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Similar People Nearby"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingVertical="8dp" />
+
+            <!-- RecyclerView for Nearby Users -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/nearbyUsersRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:orientation="horizontal"
+                android:clipToPadding="false"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Dot indicator placeholder (below the RecyclerView) -->
+            <LinearLayout
+                android:id="@+id/dotIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:paddingVertical="8dp" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
