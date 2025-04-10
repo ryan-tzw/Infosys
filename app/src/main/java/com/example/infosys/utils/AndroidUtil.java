@@ -112,4 +112,8 @@ public class AndroidUtil {
         });
     }
 
+    public static void loadFriendProfile(){
+
+    }
+
 }
