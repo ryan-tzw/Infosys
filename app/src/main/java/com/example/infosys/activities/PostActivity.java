@@ -2,7 +2,6 @@ package com.example.infosys.activities;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -103,6 +102,11 @@ public class PostActivity extends AppCompatActivity {
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
+
+        MaterialToolbar toolbar = findViewById(R.id.app_bar);
+        AndroidUtil.setToolbarPadding(toolbar);
+
+        // Set the padding for the bottom of the message input layout
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
             Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
@@ -114,18 +118,6 @@ public class PostActivity extends AppCompatActivity {
 
             return WindowInsetsCompat.CONSUMED;
         });
-
-
-        View root = findViewById(android.R.id.content);
-        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            Rect r = new Rect();
-            root.getWindowVisibleDisplayFrame(r);
-            int screenHeight = root.getRootView().getHeight();
-            int keypadHeight = screenHeight - r.bottom;
-
-            Log.d("KeyboardDebug", "Keypad height = " + keypadHeight);
-        });
-
 
         mPostId = getIntent().getStringExtra(EXTRA_POST_ID);
         mCommunityId = getIntent().getStringExtra(EXTRA_COMMUNITY_ID);

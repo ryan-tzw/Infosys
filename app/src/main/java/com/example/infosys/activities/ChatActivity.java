@@ -68,6 +68,7 @@ public class ChatActivity extends AppCompatActivity {
 
         AndroidUtil.setToolbarPadding(findViewById(R.id.app_bar));
 
+        // Set bottom padding for the message input layout
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
             Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());

@@ -83,7 +83,6 @@ public class AndroidUtil {
 
             return insets;
         });
-
     }
 
 }
