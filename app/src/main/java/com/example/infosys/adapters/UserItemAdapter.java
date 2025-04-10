@@ -1,6 +1,7 @@
 package com.example.infosys.adapters;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,18 +55,26 @@ public class UserItemAdapter extends RecyclerView.Adapter<UserItemAdapter.UserVi
         }
 
         public void bind(User user) {
-            userName.setText(user.getUsername());
-            List<String> interests = user.getInterests();
-            if (interests != null && !interests.isEmpty()){
-                String joinedInterests = TextUtils.join(", ", interests);
-                userInterests.setText(joinedInterests);
+            if (user != null) {
+                Log.d("UserItemAdapter", "Binding user: " + user.getUsername());  // Log to check user data
+                userName.setText(user.getUsername());
+                List<String> interests = user.getInterests();
+                if (interests != null && !interests.isEmpty()) {
+                    String joinedInterests = TextUtils.join(", ", interests);
+                    userInterests.setText(joinedInterests);
+                }
+                // Load profile image using Glide or Picasso
+                if (!TextUtils.isEmpty(user.getProfilePictureUrl())) {
+                    Glide.with(itemView.getContext())
+                            .load(user.getProfilePictureUrl())
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .circleCrop()
+                            .into(userImage);
+                } else {
+                    userImage.setImageResource(R.drawable.ic_profile_placeholder);
+                }
             }
-            // Load profile image using Glide or Picasso
-            Glide.with(itemView.getContext())
-                    .load(user.getProfilePictureUrl())
-                    .centerInside()
-                    .placeholder(R.drawable.ic_profile_placeholder) // Placeholder image if no imageUrl is available
-                    .into(userImage);
+
         }
     }
 }

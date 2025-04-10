@@ -14,6 +14,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -152,7 +154,45 @@ public class FirebaseUtil {
                 .addOnFailureListener(e -> Log.e("FirebaseUtil", "Failed to remove FCM token", e));
     }
 
+    public static Query getAllUsers(){
+        return FirebaseFirestore.getInstance().collection("users");
+    }
 
+    public static void getCurrentUserGeoPoint(final GeoPointCallback callback) {
+        String currentUserUid = getCurrentUserUid();
+        if (currentUserUid == null) {
+            Log.d(TAG, "getCurrentUserGeoPoint: User not signed in");
+            callback.onError("User not signed in");
+            return;
+        }
+
+        DocumentReference userDocRef = FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(currentUserUid);
+
+        userDocRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                GeoPoint location = documentSnapshot.getGeoPoint("location");
+                if (location != null) {
+                    callback.onGeoPointRetrieved(location);
+                } else {
+                    Log.d(TAG, "getCurrentUserGeoPoint: Location field is null or not available");
+                    callback.onError("Location not available");
+                }
+            } else {
+                Log.d(TAG, "getCurrentUserGeoPoint: User document does not exist");
+                callback.onError("User document does not exist");
+            }
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "getCurrentUserGeoPoint: Error fetching user document", e);
+            callback.onError("Error fetching user document");
+        });
+    }
+
+    public interface GeoPointCallback {
+        void onGeoPointRetrieved(GeoPoint geoPoint);
+        void onError(String error);
+    }
     public interface UsernameCallback {
         void onUserRetrieved(User user);
     }

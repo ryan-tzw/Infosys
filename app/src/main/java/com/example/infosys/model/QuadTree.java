@@ -41,7 +41,7 @@ public class QuadTree {
         divided = true;
     }
 
-    List<Point> query(GeoRect range, List<Point> found) {
+    public List<Point> query(GeoRect range, List<Point> found) {
         if (!boundary.intersects(range)) return found;
 
         for (Point p : points) {

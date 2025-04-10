@@ -9,4 +9,8 @@ public class Point {
         this.y = y;
         this.userId = userId;
     }
+
+    public String getUserId() {
+        return userId;
+    }
 }
