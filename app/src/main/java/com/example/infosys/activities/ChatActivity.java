@@ -10,10 +10,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -24,6 +26,7 @@ import com.example.infosys.R;
 import com.example.infosys.adapters.MessagesAdapter;
 import com.example.infosys.managers.ChatManager;
 import com.example.infosys.managers.MessagesManager;
+import com.example.infosys.managers.StatusManager;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
 import com.example.infosys.model.Message;
@@ -40,13 +43,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends StatusActivity {
     private static final String TAG = "ChatActivity";
     MaterialToolbar toolbar;
     EditText inputMessage;
     ImageButton sendButton, scrollToBottomButton;
     String currentUserId, chatId, groupName;
     ChatManager chatManager;
+    TextView chatName, textAvailability;
     RecyclerView messageRecyclerView;
     MessagesManager messagesManager;
     MessagesAdapter messagesAdapter;
@@ -189,6 +193,12 @@ public class ChatActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+        View customView = getLayoutInflater().inflate(R.layout.toolbar_custom, toolbar, false);
+        chatName = customView.findViewById(R.id.chatName);
+        textAvailability = customView.findViewById(R.id.textAvailability);
+        toolbar.addView(customView);
+
         toolbar.setNavigationOnClickListener(v -> finish());
         sendButton.setOnClickListener(v -> sendMessage());
 
@@ -254,12 +264,24 @@ public class ChatActivity extends AppCompatActivity {
     private void populateData(Chat chat) {
         if (chat.isGroupChat()) {
             groupName = chat.getGroupName();
+            chatName.setText(groupName);
             Objects.requireNonNull(getSupportActionBar()).setTitle(groupName);
-        } else {
+        }else {
             String friendId = UserManager.getInstance().getFriendId(chat);
+            StatusManager statusManager = new StatusManager();
+            statusManager.listenToUserAvailability(friendId, isOnline -> {
+                if (isOnline != null && isOnline) {
+                    textAvailability.setText("Online");
+                    textAvailability.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.green));
+                } else {
+                    textAvailability.setText("Offline");
+                    textAvailability.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.black));
+                }
+            });
+
             UserManager.getInstance().getUser(friendId)
                     .addOnSuccessListener(friend -> {
-                        Objects.requireNonNull(getSupportActionBar()).setTitle(friend.getUsername());
+                        chatName.setText(friend.getUsername());
                     })
                     .addOnFailureListener(e -> {
                         Objects.requireNonNull(getSupportActionBar()).setTitle("Unknown user");

@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:paddingVertical="12dp">
 
+    <!-- Profile Picture -->
     <ImageView
         android:id="@+id/chat_image"
         android:layout_width="48dp"
@@ -14,6 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Chat Name -->
     <TextView
         android:id="@+id/chat_name"
         android:layout_width="0dp"
@@ -25,6 +27,7 @@
         app:layout_constraintStart_toEndOf="@id/chat_image"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Last Message -->
     <TextView
         android:id="@+id/last_message"
         android:layout_width="0dp"
@@ -36,5 +39,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/chat_image"
         app:layout_constraintTop_toBottomOf="@id/chat_name" />
+
+    <!-- Status Indicator (Green Dot) -->
+    <View
+        android:id="@+id/statusIndicator"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/status_indicator"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/chat_image"
+        app:layout_constraintEnd_toEndOf="@id/chat_image" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

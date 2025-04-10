@@ -40,7 +40,7 @@ import com.google.firebase.storage.StorageReference;
 import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends StatusActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1;
     private final ActivityResultLauncher<String> requestPermissionLauncher =

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.infosys.R;
 import com.example.infosys.activities.ChatActivity;
+import com.example.infosys.managers.StatusManager;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
 
@@ -93,6 +94,15 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
                     holder.chatImage.setImageResource(R.drawable.ic_profile_placeholder);
                     Log.e(TAG, "onBindViewHolder: Failed to get friend id", e);
                 });
+        StatusManager statusManager = new StatusManager();
+        statusManager.setOnAvailabilityUpdated(() -> {
+            Boolean isOnline = statusManager.getUserAvailabilityMap().get(friendId);
+            if (isOnline != null && isOnline) {
+                holder.availability.setVisibility(View.VISIBLE);
+            } else {
+                holder.availability.setVisibility(View.GONE);
+            }
+        });
     }
 
 
@@ -110,12 +120,14 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
         ImageView chatImage;
         TextView chatName, lastMessage;
+        View availability;
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
             chatImage = itemView.findViewById(R.id.chat_image);
             chatName = itemView.findViewById(R.id.chat_name);
             lastMessage = itemView.findViewById(R.id.last_message);
+            availability = itemView.findViewById(R.id.statusIndicator);
         }
     }
 }
