@@ -35,7 +35,6 @@ public class User implements Serializable {
         this.profilePictureUrl = "";
         this.bio = "";
         this.interests = new ArrayList<>();
-        this.location = null;
         this.dateOfBirth = null;
         this.fcmToken = "";
     }
