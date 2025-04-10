@@ -18,8 +18,16 @@
         android:paddingVertical="8dp"
         android:text="@string/placeholder_text"
         android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/message_timestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="timestamp here"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/message_text"
+        app:layout_constraintTop_toBottomOf="@id/message_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

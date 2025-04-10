@@ -64,6 +64,16 @@ public class AndroidUtil {
                 .into(imageView);
     }
 
+    public static void loadProfilePicture(Context context, @Nullable String uriString, ImageView imageView) {
+        Glide.with(context)
+                .load(uriString)
+                .placeholder(R.drawable.logo)
+                .error(R.drawable.logo)
+                .fallback(R.drawable.logo)
+                .apply(RequestOptions.circleCropTransform())
+                .into(imageView);
+    }
+
     public static void setToolbarPadding(View view) {
         ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
             int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;

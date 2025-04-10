@@ -65,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        
+
         AndroidUtil.setToolbarPadding(findViewById(R.id.app_bar));
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
@@ -129,6 +129,10 @@ public class ChatActivity extends AppCompatActivity {
 
                     lastVisible = snapshots.getDocuments().get(snapshots.size() - 1);
                     messagesAdapter.notifyItemRangeInserted(currentSize, snapshots.size());
+
+                    // This is to update (hide) the timestamp of the last message
+                    messagesAdapter.notifyItemChanged(snapshots.size());
+
                     isLoadingMore = false;
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "loadMessages: ", e));
@@ -144,16 +148,18 @@ public class ChatActivity extends AppCompatActivity {
                         if (change.getType() == DocumentChange.Type.ADDED) {
                             Message newMessage = change.getDocument().toObject(Message.class);
 
-                            // Prevent duplicates (optional: you can improve this check)
                             if (!messageList.contains(newMessage)) {
                                 Log.d(TAG, "listenForNewMessages: Adding older messages");
                                 messageList.add(0, newMessage);
                                 messagesAdapter.notifyItemInserted(0);
 
+                                // This is to update (hide) the timestamp from the message above
+                                if (messageList.size() > 1) {
+                                    messagesAdapter.notifyItemChanged(1);
+                                }
+
                                 if (isUserAtBottom()) {
                                     messageRecyclerView.scrollToPosition(0);
-                                } else {
-                                    // TODO: show “new messages” pop up or smth
                                 }
                             }
                         }
