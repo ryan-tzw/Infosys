@@ -1,5 +1,7 @@
 package com.example.infosys.fragments.main;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -78,7 +80,7 @@ public class HomeFragment extends BaseFragment {
 
         // Setup RecyclerView
         nearbyUsersList = new ArrayList<>();
-        userItemAdapter = new UserItemAdapter(nearbyUsersList);
+        userItemAdapter = new UserItemAdapter(nearbyUsersList, getContext());
         nearbyUsersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         nearbyUsersRecyclerView.setAdapter(userItemAdapter);
 
@@ -214,4 +216,6 @@ public class HomeFragment extends BaseFragment {
                     });
         });
     }
+
+
 }
