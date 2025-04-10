@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -58,6 +59,8 @@ public class CreateCommunityActivity extends AppCompatActivity {
         Intent intent = new Intent(CreateCommunityActivity.this, MainActivity.class);
         intent.putExtra("newCommunity", true);
         intent.putExtra("communityId", communityId);
+
+        Log.d(TAG, "navigateToNewCommunity: Navigating to new community with id: " + communityId);
 
         startActivity(intent);
     }

@@ -137,7 +137,9 @@ public class MainActivity extends AppCompatActivity {
             boolean newCommunity = intent.getBooleanExtra("newCommunity", false);
             if (newCommunity) {
                 Log.d(TAG, "handleIntent: New community created, navigating to it");
-                String communityId = getIntent().getStringExtra("communityId");
+                String communityId = intent.getStringExtra("communityId");
+
+                Log.d(TAG, "handleIntent: Navigating to newly created community with id: " + communityId);
 
                 bottomNavigationView.setSelectedItemId(R.id.nav_communities);
                 CommunityFragment fragment = CommunityFragment.newInstance(communityId);

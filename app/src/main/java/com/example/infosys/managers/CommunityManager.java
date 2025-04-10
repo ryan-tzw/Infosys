@@ -132,14 +132,16 @@ public class CommunityManager {
         // Add the user to the community, make them an admin and set them as the owner
         String currentUserId = FirebaseUtil.getCurrentUserUid();
 
-        Task<Void> joinCommunityTask = joinCommunity(community.getId());
-        Task<Void> addAdminTask = addAdmin(community.getId(), currentUserId);
-        Task<Void> setCommunityOwnerTask = setCommunityOwner(community.getId(), currentUserId);
+        String communityId = community.getId();
+
+        Task<Void> joinCommunityTask = joinCommunity(communityId);
+        Task<Void> addAdminTask = addAdmin(communityId, currentUserId);
+        Task<Void> setCommunityOwnerTask = setCommunityOwner(communityId, currentUserId);
 
         Tasks.whenAllSuccess(joinCommunityTask, addAdminTask, setCommunityOwnerTask)
                 .addOnSuccessListener(aVoid2 -> {
-                    callback.onCommunityCreated(community.getId());
-                    Log.d(TAG, "createCommunity: Successfully set up a community: " + community.getId());
+                    callback.onCommunityCreated(communityId);
+                    Log.d(TAG, "createCommunity: Successfully set up a community: " + communityId);
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "createCommunity: Error while setting up community: ", e));
 
