@@ -88,25 +88,32 @@ public class ChatManager {
         Task<QuerySnapshot> queryForUser = db.collection(Collections.CHATS)
                 .whereEqualTo("groupChat", false)
                 .whereArrayContains("participants", userId)
-                .get();
+                .get()
+                .addOnFailureListener(e -> Log.e(TAG, "getDirectMessageId: Failed to get user chats", e));
 
         Task<QuerySnapshot> queryForOtherUser = db.collection(Collections.CHATS)
                 .whereEqualTo("groupChat", false)
                 .whereArrayContains("participants", otherUserId)
-                .get();
+                .get()
+                .addOnFailureListener(e -> Log.e(TAG, "getDirectMessageId: Failed to get other user chats", e));
 
         return Tasks.whenAllSuccess(queryForUser, queryForOtherUser)
                 .continueWithTask(task -> {
                     if (task.isSuccessful()) {
+                        Log.d(TAG, "getDirectMessageId: Successfully retrieved chats");
                         QuerySnapshot userQuery = queryForUser.getResult();
                         QuerySnapshot otherUserQuery = queryForOtherUser.getResult();
 
                         if (userQuery != null && otherUserQuery != null) {
                             return findCommonChats(userQuery, otherUserQuery);
+                        } else {
+                            Log.e(TAG, "getDirectMessageId: Query results were null");
+                            return Tasks.forResult(null);
                         }
                     }
-                    return null;
-                });
+                    return Tasks.forResult(null);
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "getDirectMessageId: Failed to find common chats", e));
     }
 
     private Task<String> findCommonChats(QuerySnapshot userQuery, QuerySnapshot otherUserQuery) {
@@ -132,7 +139,8 @@ public class ChatManager {
             }
         }
 
-        return null;
+        Log.d(TAG, "findCommonChats: No common chat found");
+        return Tasks.forResult(null);
     }
 
     public Task<Void> addParticipant(String chatId, String userId) {
