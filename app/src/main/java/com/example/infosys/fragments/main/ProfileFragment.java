@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -56,24 +57,24 @@ import java.util.Map;
 public class ProfileFragment extends BaseFragment {
     private static final String TAG = "ProfileFragment";
     private static final String ARG_USER_ID = "userId";
-    UserPostsAdapter adapter;
+
+    private String userId;
+    private User user;
+    private List<Post> postsList;
+
+    private ImageView profileImage, locationIcon;
+    private ImageButton editButton;
+    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, displayLocation;
+    private RecyclerView postsRecyclerView;
+    private ConstraintLayout friendsCountLayout, communitiesCountLayout;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private UserPostsAdapter adapter;
+
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ActivityResultLauncher<String[]> locationPermissionRequest;
-    private ImageView profileImage;
-    private ImageView locationIcon;
-    private TextView displayLocation;
-    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, noPostsText;
-    private ConstraintLayout friendsCountLayout, communitiesCountLayout;
-    private RecyclerView postsRecyclerView;
-    private User user;
-    private String userId;
-    private List<Post> postsList;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private FusedLocationProviderClient fusedLocationClient;
 
-
     public ProfileFragment() {
-        // Required empty public constructor
     }
 
     public static ProfileFragment newInstance(String userId) {
@@ -94,36 +95,51 @@ public class ProfileFragment extends BaseFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        getParentFragmentManager().setFragmentResultListener("edit_profile_result", this, (requestKey, result) -> {
+            String updatedUsername = result.getString("updatedUsername");
+            String updatedBio = result.getString("updatedBio");
+
+            if (updatedUsername != null && !updatedUsername.isEmpty()) {
+                txtName.setText(updatedUsername);
+            }
+
+            if (updatedBio != null && !updatedBio.isEmpty()) {
+                txtAboutMe.setText(updatedBio);
+            } else if ((updatedUsername == null || updatedUsername.isEmpty()) &&
+                    (updatedBio == null || updatedBio.isEmpty()) &&
+                    (user.getBio() == null || user.getBio().isEmpty())) {
+                txtAboutMe.setText("Hi! I'm " + txtName.getText().toString() + ". I haven't written anything about myself yet.");
+            }
+        });
 
         instantiateViews(view);
         getProfilePicture();
+        setupEditProfile();
 
         UserManager.getInstance().getUser(userId)
                 .addOnSuccessListener(user -> {
                     this.user = user;
                     populateData();
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "onCreateView: Failed to get user data", e));
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to get user data", e));
 
-        setupPostsRecyclerView(view);
+        setupSwipeToRefresh(view);
 
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            loadPosts();
-            swipeRefreshLayout.setRefreshing(false);
-        });
-
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
+        if (hasLocationPermission()) {
             getCurrentLocation();
         }
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        setupPostsRecyclerView(); // Set up RecyclerView after the view is created
     }
 
     private void instantiateViews(View view) {
@@ -137,50 +153,65 @@ public class ProfileFragment extends BaseFragment {
         postsRecyclerView = view.findViewById(R.id.profile_recycler_view);
         displayLocation = view.findViewById(R.id.displayLocation);
         locationIcon = view.findViewById(R.id.location_icon);
+        editButton = view.findViewById(R.id.edit_btn);
 
-        locationPermissionRequest = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::handleLocationPermissionResult);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        locationPermissionRequest = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                this::handleLocationPermissionResult);
 
         profileImage.setOnClickListener(v -> choosePicture());
         locationIcon.setOnClickListener(v -> requestLocationPermission());
-
-
     }
 
     private void populateData() {
         txtName.setText(user.getUsername());
         txtFriendsCount.setText(String.valueOf(user.getFriendsCount()));
         txtCommunitiesCount.setText(String.valueOf(user.getCommunitiesCount()));
-        if (user.getBio() == null || user.getBio().isEmpty()) {
-            txtAboutMe.setText("Hi! I'm " + user.getUsername() + ". I haven't written anything about myself yet.");
-        } else {
-            txtAboutMe.setText(user.getBio());
-        }
+        txtAboutMe.setText((user.getBio() == null || user.getBio().isEmpty())
+                ? "Hi! I'm " + user.getUsername() + ". I haven't written anything about myself yet."
+                : user.getBio());
     }
 
-    private void setupPostsRecyclerView(View view) {
+    private void setupPostsRecyclerView() {
         postsList = new ArrayList<>();
         adapter = new UserPostsAdapter(postsList, userId);
 
         postsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         postsRecyclerView.setAdapter(adapter);
 
-        AndroidUtil.setupDivider(view, postsRecyclerView);
-
+        AndroidUtil.setupDivider(requireView(), postsRecyclerView);
         loadPosts();
     }
 
     private void loadPosts() {
         UserManager.getInstance().getAllUserPosts(userId)
                 .addOnSuccessListener(posts -> {
-                    Log.d(TAG, "loadPosts: " + posts.size() + " posts loaded");
                     postsList.clear();
                     postsList.addAll(posts);
                     adapter.notifyDataSetChanged();
+                    Log.d(TAG, "Loaded " + posts.size() + " posts.");
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "loadPosts: Failed to load posts", e));
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to load posts", e));
     }
 
+    private void setupSwipeToRefresh(View view) {
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // Reload profile data
+            UserManager.getInstance().getUser(userId)
+                    .addOnSuccessListener(user -> {
+                        this.user = user;
+                        populateData(); // Populate profile data
+                        loadPosts();    // Reload posts
+                        swipeRefreshLayout.setRefreshing(false); // Stop refreshing indicator
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to get user data during refresh", e);
+                        swipeRefreshLayout.setRefreshing(false); // Stop refreshing indicator in case of failure
+                    });
+        });
+    }
 
     private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(
@@ -188,28 +219,22 @@ public class ProfileFragment extends BaseFragment {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri selectedImageUri = result.getData().getData();
-                        Log.d(TAG, "onCreate: Image URI: " + selectedImageUri);
                         if (selectedImageUri != null) {
                             AndroidUtil.loadProfilePicture(requireContext(), selectedImageUri, profileImage);
-
                             uploadImageToFirebase(selectedImageUri);
-
                             Glide.with(requireContext())
                                     .load(selectedImageUri)
                                     .circleCrop()
                                     .placeholder(R.drawable.ic_profile_placeholder)
-                                    .into(new CustomTarget<Drawable>() {
+                                    .into(new CustomTarget<>() {
                                         @Override
                                         public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                            Log.d(TAG, "onResourceReady: Resource ready");
-                                            BottomNavigationView bottomNavigationView = requireActivity().findViewById(R.id.bottom_navigation);
-                                            bottomNavigationView.getMenu().findItem(R.id.nav_profile).setIcon(resource);
+                                            BottomNavigationView nav = requireActivity().findViewById(R.id.bottom_navigation);
+                                            nav.getMenu().findItem(R.id.nav_profile).setIcon(resource);
                                         }
 
                                         @Override
-                                        public void onLoadCleared(@Nullable Drawable placeholder) {
-                                            Log.d(TAG, "onLoadCleared: Load Cleared");
-                                        }
+                                        public void onLoadCleared(@Nullable Drawable placeholder) {}
                                     });
                         }
                     }
@@ -228,42 +253,32 @@ public class ProfileFragment extends BaseFragment {
     }
 
     private void uploadImageToFirebase(Uri imageUri) {
-        final LinearProgressIndicator progressIndicator = requireView().findViewById(R.id.progress_indicator);
-        progressIndicator.setVisibility(View.VISIBLE);
+        LinearProgressIndicator progress = requireView().findViewById(R.id.progress_indicator);
+        progress.setVisibility(View.VISIBLE);
 
-        // Use the user's ID as the filename for the image
         String currentUserUid = FirebaseUtil.getCurrentUserUid();
-
         UserManager.getInstance().setProfilePicture(currentUserUid, imageUri)
                 .addOnSuccessListener(aVoid -> {
-                    progressIndicator.setVisibility(View.GONE);
+                    progress.setVisibility(View.GONE);
                     Snackbar.make(requireView(), "Profile picture updated", Snackbar.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    progressIndicator.setVisibility(View.GONE);
+                    progress.setVisibility(View.GONE);
                     AndroidUtil.showToast(requireContext(), "Failed to upload image");
-                    Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
+                    Log.e(TAG, "Failed to upload image", e);
                 });
     }
 
     private void getProfilePicture() {
-        String currentUserUid = FirebaseUtil.getCurrentUserUid();
-        UserManager.getInstance().getProfilePicture(currentUserUid)
-                .addOnSuccessListener(uri -> {
-                    Log.d(TAG, "getProfilePicture: " + uri);
-                    AndroidUtil.loadProfilePicture(requireActivity(), uri, profileImage);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "getProfilePicture: Failed to get profile picture", e);
-                });
+        String uid = FirebaseUtil.getCurrentUserUid();
+        UserManager.getInstance().getProfilePicture(uid)
+                .addOnSuccessListener(uri -> AndroidUtil.loadProfilePicture(requireActivity(), uri, profileImage))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to get profile picture", e));
     }
 
     private void requestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
-            getCurrentLocation();  // Proceed to get location if permission is already granted
+        if (hasLocationPermission()) {
+            getCurrentLocation();
         } else {
             locationPermissionRequest.launch(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -272,15 +287,15 @@ public class ProfileFragment extends BaseFragment {
         }
     }
 
-    private void handleLocationPermissionResult(Map<String, Boolean> result) {
-        Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-        Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+    private boolean hasLocationPermission() {
+        return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
 
-        if (fineLocationGranted != null && fineLocationGranted) {
-            AndroidUtil.showToast(requireContext(), "Precise location access granted.");
-            getCurrentLocation();
-        } else if (coarseLocationGranted != null && coarseLocationGranted) {
-            AndroidUtil.showToast(requireContext(), "Approximate location access granted.");
+    private void handleLocationPermissionResult(Map<String, Boolean> result) {
+        if (Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION)) ||
+                Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_COARSE_LOCATION))) {
+            AndroidUtil.showToast(requireContext(), "Location access granted.");
             getCurrentLocation();
         } else {
             AndroidUtil.showToast(requireContext(), "Location permission denied.");
@@ -297,9 +312,8 @@ public class ProfileFragment extends BaseFragment {
                     intent.setData(Uri.parse("package:" + requireContext().getPackageName()));
                     startActivity(intent);
                 })
-                .setNegativeButton("Cancel", (dialog, which) -> {
-                    AndroidUtil.showToast(requireContext(), "Location access is required for full functionality.");
-                })
+                .setNegativeButton("Cancel", (dialog, which) ->
+                        AndroidUtil.showToast(requireContext(), "Location access is required for full functionality."))
                 .show();
     }
 
@@ -319,37 +333,26 @@ public class ProfileFragment extends BaseFragment {
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(requireActivity(), location -> {
                     if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        String locationText = "Lat: " + latitude + ", Lng: " + longitude;
+                        double lat = location.getLatitude();
+                        double lng = location.getLongitude();
+                        String locationText = "Lat: " + lat + ", Lng: " + lng;
 
-                        // Reverse Geocoding to get a detailed address
                         Geocoder geocoder = new Geocoder(requireContext());
                         try {
-                            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
                             if (addresses != null && !addresses.isEmpty()) {
-                                Address address = addresses.get(0);
-
-                                // Get the most specific feature name (e.g., university, landmark)
-                                String featureName = address.getFeatureName(); // This may contain the name of a building or landmark
-                                String street = address.getThoroughfare(); // Street name
-                                String locality = address.getLocality(); // City name
-                                String subLocality = address.getSubLocality(); // More precise location inside the city
-                                String postalCode = address.getPostalCode(); // Postal Code
-
-                                // Construct a detailed location string
-                                String detailedLocation = featureName != null ? featureName : "";
-                                detailedLocation += street != null ? ", " + street : "";
-                                detailedLocation += subLocality != null ? ", " + subLocality : "";
-                                detailedLocation += locality != null ? ", " + locality : "";
-                                detailedLocation += postalCode != null ? ", " + postalCode : "";
+                                Address addr = addresses.get(0);
+                                StringBuilder detailedLocation = new StringBuilder();
+                                if (addr.getFeatureName() != null) detailedLocation.append(addr.getFeatureName());
+                                if (addr.getThoroughfare() != null) detailedLocation.append(", ").append(addr.getThoroughfare());
+                                if (addr.getSubLocality() != null) detailedLocation.append(", ").append(addr.getSubLocality());
+                                if (addr.getLocality() != null) detailedLocation.append(", ").append(addr.getLocality());
+                                if (addr.getPostalCode() != null) detailedLocation.append(", ").append(addr.getPostalCode());
 
                                 locationText = "Location: " + detailedLocation;
-                                GeoPoint geoPoint = new GeoPoint(latitude, longitude);
-                                FirebaseUtil.updateUserField("location", geoPoint, requireContext());
+                                FirebaseUtil.updateUserField("location", new GeoPoint(lat, lng), requireContext());
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
                             locationText += "\nUnable to get exact place name.";
                         }
 
@@ -358,9 +361,13 @@ public class ProfileFragment extends BaseFragment {
                         displayLocation.setText("Unable to retrieve location.");
                     }
                 })
-                .addOnFailureListener(e -> {
-                    displayLocation.setText("Failed to get location.");
-                });
+                .addOnFailureListener(e -> displayLocation.setText("Failed to get location."));
     }
 
+    private void setupEditProfile() {
+        editButton.setOnClickListener(v -> {
+            EditProfileFragment bottomSheet = new EditProfileFragment();
+            bottomSheet.show(requireActivity().getSupportFragmentManager(), "EditProfileBottomSheet");
+        });
+    }
 }
