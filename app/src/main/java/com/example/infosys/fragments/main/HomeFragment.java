@@ -27,6 +27,7 @@ import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.GeoRect;
 import com.example.infosys.model.Point;
 import com.example.infosys.model.QuadTree;
+import com.example.infosys.model.Quadrant;
 import com.example.infosys.model.User;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -125,10 +126,16 @@ public class HomeFragment extends BaseFragment {
     private void findNearbyUsers(double latitude, double longitude) {
         Log.d("HomeFragment", "findNearbyUsers called with latitude: " + latitude + ", longitude: " + longitude);
 
+        Quadrant userQuadrant = new Quadrant(latitude, longitude, 1.0);
+        String userQuadrantId = userQuadrant.getId();
+
+        GeoRect userQuadrantBounds = userQuadrant.getBounds();
+
+        QuadTree tree = new QuadTree(userQuadrantBounds, 4, userQuadrantId);
+
         FirebaseUtil.getAllUsers().get().addOnSuccessListener(querySnapshot -> {
             Log.d("HomeFragment", "Firestore query success: " + querySnapshot.size());
-            GeoRect worldBounds = new GeoRect(-180, -90, 180, 90);
-            QuadTree tree = new QuadTree(worldBounds, 4);
+
             Map<String, User> userMap = new HashMap<>();
 
             for (DocumentSnapshot doc : querySnapshot) {
@@ -137,9 +144,14 @@ public class HomeFragment extends BaseFragment {
                     if (user != null && user.getLocation() != null) {
                         double otherLat = user.getLocation().getLatitude();
                         double otherLng = user.getLocation().getLongitude();
-                        tree.insert(new Point(otherLng, otherLat, doc.getId()));
-                        userMap.put(doc.getId(), user);
-                        Log.d("HomeFragment", "User with location inserted: " + user.getUsername());
+
+                        if (user.getQuadrantId() != null && user.getQuadrantId().equals(userQuadrantId)) {
+                            tree.insert(new Point(otherLng, otherLat, doc.getId()));
+                            userMap.put(doc.getId(), user);
+                            Log.d("HomeFragment", "User with location inserted: " + user.getUsername());
+                        } else {
+                            Log.d("HomeFragment", "User " + doc.getId() + " is outside the current user's quadrant or has null quadrantId.");
+                        }
                     } else {
                         Log.d("HomeFragment", "User without location: " + doc.getId());
                     }
@@ -148,16 +160,15 @@ public class HomeFragment extends BaseFragment {
                 }
             }
 
-            // Define nearby region (~1km)
             double radius = 0.01;
             GeoRect searchArea = new GeoRect(longitude - radius, latitude - radius, longitude + radius, latitude + radius);
             List<Point> nearby = tree.query(searchArea, new ArrayList<>());
             Log.d("HomeFragment", "Nearby users found: " + nearby.size());
 
-            // Update RecyclerView
             updateRecyclerView(nearby, userMap);
         }).addOnFailureListener(e -> Log.e("HomeFragment", "Firestore query failed", e));
     }
+
 
     private void updateRecyclerView(List<Point> nearbyPoints, Map<String, User> userMap) {
         Log.d("HomeFragment", "updateRecyclerView called with " + nearbyPoints.size() + " nearby points");

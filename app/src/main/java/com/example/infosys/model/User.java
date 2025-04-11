@@ -21,6 +21,7 @@ public class User implements Serializable {
     private Timestamp dateOfBirth;
     private String fcmToken;
     private GeoPoint location;
+    private String quadrantId;
 
     public User() {
     }
@@ -89,9 +90,7 @@ public class User implements Serializable {
 
     public GeoPoint getLocation() { return location; }
 
-    public void setLocation(GeoPoint location){
-        this.location = location;
-    }
+    public String getQuadrantId(){ return quadrantId; }
 
     public Timestamp getDateOfBirth() {
         return dateOfBirth;
