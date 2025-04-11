@@ -68,18 +68,7 @@ public class ChatActivity extends AppCompatActivity {
 
         AndroidUtil.setToolbarPadding(findViewById(R.id.app_bar));
 
-        // Set bottom padding for the message input layout
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
-            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
-            Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
-
-            int extraPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-            int bottomPadding = Math.max(imeInsets.bottom, navInsets.bottom) + extraPadding;
-
-            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottomPadding);
-
-            return WindowInsetsCompat.CONSUMED;
-        });
+        setBottomPadding();
 
         initialiseData();
         initialiseUI();
@@ -91,6 +80,20 @@ public class ChatActivity extends AppCompatActivity {
                     loadInitialMessages();
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "onCreate: ", e));
+    }
+
+    private void setBottomPadding() {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.message_input_layout), (v, insets) -> {
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+            int extraPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+            int bottomPadding = Math.max(imeInsets.bottom, navInsets.bottom) + extraPadding;
+
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottomPadding);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     private void loadInitialMessages() {
@@ -267,6 +270,7 @@ public class ChatActivity extends AppCompatActivity {
             UserManager.getInstance().getUser(friendId)
                     .addOnSuccessListener(friend -> {
                         Objects.requireNonNull(getSupportActionBar()).setTitle(friend.getUsername());
+                        Objects.requireNonNull(getSupportActionBar()).setSubtitle("offline");
                     })
                     .addOnFailureListener(e -> {
                         Objects.requireNonNull(getSupportActionBar()).setTitle("Unknown user");

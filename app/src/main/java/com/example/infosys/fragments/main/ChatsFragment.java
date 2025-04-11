@@ -9,6 +9,7 @@ import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +25,7 @@ import com.example.infosys.managers.MainManager;
 import com.example.infosys.model.Chat;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
+import com.example.infosys.viewmodels.ChatListViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
@@ -32,11 +34,13 @@ import java.util.List;
 
 public class ChatsFragment extends BaseFragment implements ToolbarConfigurable {
     private static final String TAG = "ChatsFragment";
-    private ChatManager chatManager;
-    private ChatsAdapter adapter;
+    private final List<Chat> chatList = new ArrayList<>();
+    private final List<String> userIds = new ArrayList<>();
     private RecyclerView recyclerView;
     private CircularProgressIndicator progressIndicator;
     private MaterialButton btnCreateChat;
+    private ChatsAdapter adapter;
+    private ChatListViewModel viewModel;
 
     public ChatsFragment() {
         // Required empty public constructor
@@ -52,7 +56,6 @@ public class ChatsFragment extends BaseFragment implements ToolbarConfigurable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        chatManager = ChatManager.getInstance();
     }
 
     @Override
@@ -75,27 +78,44 @@ public class ChatsFragment extends BaseFragment implements ToolbarConfigurable {
 
         AndroidUtil.setupDivider(view, recyclerView);
 
-        List<Chat> chatsList = new ArrayList<>();
-        adapter = new ChatsAdapter(chatsList);
+        viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+        adapter = new ChatsAdapter(chatList);
+
+        viewModel.getAvailabilityLiveData().observe(getViewLifecycleOwner(), availabilityMap -> {
+            adapter.setUserAvailabilityMap(availabilityMap);
+        });
+
         recyclerView.setAdapter(adapter);
 
         String currentUserId = FirebaseUtil.getCurrentUserUid();
 
-        chatManager.getUserChats(currentUserId)
+        ChatManager.getInstance().getUserChats(currentUserId)
                 .addOnSuccessListener(chats -> {
-                    chatsList.addAll(chats);
+                    Log.d(TAG, "setupRecyclerView: no. of chats: " + chats.size());
+                    chatList.clear();
+                    chatList.addAll(chats);
                     adapter.notifyDataSetChanged();
                     showScreen();
+
+                    // Extract user IDs and observe availability
+                    userIds.clear();
+                    for (Chat chat : chats) {
+                        for (String participantId : chat.getParticipants()) {
+                            if (!participantId.equals(currentUserId)) {
+                                userIds.add(participantId);
+                                break;
+                            }
+                        }
+                    }
+                    viewModel.observeAvailability(userIds);
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "setupRecyclerView: Failed to get user's chats: ", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "setupRecyclerView: Failed to get user's chats: ", e));
     }
 
     private void instantiateViews(View view) {
         progressIndicator = view.findViewById(R.id.progress_indicator);
-        recyclerView = view.findViewById(R.id.chats_recycler_view);
         btnCreateChat = view.findViewById(R.id.create_chat_button);
+        recyclerView = view.findViewById(R.id.chats_recycler_view);
 
         btnCreateChat.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(getContext(), v);

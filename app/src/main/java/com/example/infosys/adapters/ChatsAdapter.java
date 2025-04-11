@@ -17,13 +17,16 @@ import com.example.infosys.activities.ChatActivity;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Chat;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
  * This adapter is for listing all chats that the user is part of
  */
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
     private static final String TAG = "ChatsAdapter";
+    private Map<String, Boolean> userAvailabilityMap = new HashMap<>();
     private List<Chat> chatList;
 
     public ChatsAdapter(List<Chat> chatList) {
@@ -75,9 +78,14 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
 
     private void setupDMChat(Chat chat, ChatViewHolder holder) {
         String friendId = UserManager.getInstance().getFriendId(chat);
+        boolean isOnline = Boolean.TRUE.equals(userAvailabilityMap.getOrDefault(friendId, false));
+        holder.onlineIndicator.setVisibility(isOnline ? View.VISIBLE : View.GONE);
+
         UserManager.getInstance().getUser(friendId)
                 .addOnSuccessListener(friend -> {
                     holder.chatName.setText(friend.getUsername());
+
+                    // Set the image
                     if (friend.getProfilePictureUrl() != null && !friend.getProfilePictureUrl().isEmpty()) {
                         Glide.with(holder.chatImage.getContext())
                                 .load(friend.getProfilePictureUrl())
@@ -95,6 +103,11 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
                 });
     }
 
+    public void setUserAvailabilityMap(Map<String, Boolean> availabilityMap) {
+        this.userAvailabilityMap = availabilityMap;
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public int getItemCount() {
@@ -108,7 +121,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
     }
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
-        ImageView chatImage;
+        ImageView chatImage, onlineIndicator;
         TextView chatName, lastMessage;
 
         public ChatViewHolder(@NonNull View itemView) {
@@ -116,6 +129,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHold
             chatImage = itemView.findViewById(R.id.chat_image);
             chatName = itemView.findViewById(R.id.chat_name);
             lastMessage = itemView.findViewById(R.id.last_message);
+            onlineIndicator = itemView.findViewById(R.id.online_status_indicator);
         }
     }
 }
