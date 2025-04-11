@@ -38,6 +38,6 @@ public class SplashActivity extends AppCompatActivity {
                 startActivity(new Intent(this, LoginActivity.class));
             }
             finish(); // Kill splash
-        }, 1800); // delay to simulate loading
+        }, 2000); // delay to simulate loading
     }
 }

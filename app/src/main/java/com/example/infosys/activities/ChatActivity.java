@@ -271,9 +271,11 @@ public class ChatActivity extends StatusActivity {
             StatusManager statusManager = new StatusManager();
             statusManager.listenToUserAvailability(friendId, isOnline -> {
                 if (isOnline != null && isOnline) {
+                    textAvailability.setVisibility(View.VISIBLE);
                     textAvailability.setText("Online");
                     textAvailability.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.green));
                 } else {
+                    textAvailability.setVisibility(View.VISIBLE);
                     textAvailability.setText("Offline");
                     textAvailability.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.black));
                 }
