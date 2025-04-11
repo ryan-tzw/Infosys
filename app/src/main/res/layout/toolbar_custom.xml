@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:text="Online"
             android:textSize="13sp"
-            android:textColor="@color/green"
+            android:textColor="@color/white"
             android:layout_marginTop="2dp"
             android:gravity="center" />
 

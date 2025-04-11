@@ -52,7 +52,10 @@
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.App.Splash"
+            android:windowSoftInputMode="adjustResize|stateHidden"/>
+        <activity
+            android:name=".activities.SplashActivity"
+            android:exported="true"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

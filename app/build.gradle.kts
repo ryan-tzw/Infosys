@@ -55,7 +55,6 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
-    implementation(libs.core.splashscreen)
     implementation(libs.imagepicker)
     implementation(libs.viewpager2)
     implementation(libs.android.image.picker)
@@ -66,6 +65,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.okhttp)
     implementation (libs.play.services.location)
+    implementation (libs.lottie)
 
 
 }
