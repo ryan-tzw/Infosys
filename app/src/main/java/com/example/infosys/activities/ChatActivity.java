@@ -1,6 +1,7 @@
 package com.example.infosys.activities;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -48,7 +49,7 @@ public class ChatActivity extends StatusActivity {
     MaterialToolbar toolbar;
     EditText inputMessage;
     ImageButton sendButton, scrollToBottomButton;
-    String currentUserId, chatId, groupName;
+    String currentUserId, chatId, groupName, friendId;
     ChatManager chatManager;
     TextView chatName, textAvailability;
     RecyclerView messageRecyclerView;
@@ -267,7 +268,7 @@ public class ChatActivity extends StatusActivity {
             chatName.setText(groupName);
             Objects.requireNonNull(getSupportActionBar()).setTitle(groupName);
         }else {
-            String friendId = UserManager.getInstance().getFriendId(chat);
+            friendId = UserManager.getInstance().getFriendId(chat);
             StatusManager statusManager = new StatusManager();
             statusManager.listenToUserAvailability(friendId, isOnline -> {
                 if (isOnline != null && isOnline) {
@@ -290,6 +291,8 @@ public class ChatActivity extends StatusActivity {
                         Log.e(TAG, "onBindViewHolder: Failed to get friend id", e);
                     });
         }
+
+        setupChatNameClick(chat);
     }
 
     private boolean isUserAtBottom() {
@@ -309,5 +312,18 @@ public class ChatActivity extends StatusActivity {
             messageListener.remove();
         }
     }
+
+    private void setupChatNameClick(Chat chat) {
+        if (!chat.isGroupChat()) {
+            chatName.setOnClickListener(v -> {
+                Intent intent = new Intent(ChatActivity.this, ViewProfilesActivity.class);
+                intent.putExtra("userId", friendId);
+                startActivity(intent);
+            });
+        } else {
+            chatName.setOnClickListener(null); // Disable click for group chats
+        }
+    }
+
 
 }
