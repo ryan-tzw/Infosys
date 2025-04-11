@@ -37,6 +37,7 @@ import com.example.infosys.adapters.UserPostsAdapter;
 import com.example.infosys.fragments.main.common.BaseFragment;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Post;
+import com.example.infosys.model.Quadrant;
 import com.example.infosys.model.User;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
@@ -51,6 +52,7 @@ import com.google.firebase.firestore.GeoPoint;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -317,7 +319,6 @@ public class ProfileFragment extends BaseFragment {
                 .show();
     }
 
-    @SuppressLint("SetTextI18n")
     private void getCurrentLocation() {
         // Check permissions
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -337,6 +338,16 @@ public class ProfileFragment extends BaseFragment {
                         double lng = location.getLongitude();
                         String locationText = "Lat: " + lat + ", Lng: " + lng;
 
+                        // Create quadrant based on the current location
+                        Quadrant quadrant = new Quadrant(lat, lng, 1.0);
+                        String quadrantId = quadrant.getId();
+
+                        // Update location in Firebase
+                        FirebaseUtil.updateUserField("location", new GeoPoint(lat, lng), requireContext());
+
+                        // Update quadrantId in Firebase
+                        FirebaseUtil.updateUserField("quadrantId", quadrantId, requireContext());
+
                         Geocoder geocoder = new Geocoder(requireContext());
                         try {
                             List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
@@ -350,7 +361,6 @@ public class ProfileFragment extends BaseFragment {
                                 if (addr.getPostalCode() != null) detailedLocation.append(", ").append(addr.getPostalCode());
 
                                 locationText = "Location: " + detailedLocation;
-                                FirebaseUtil.updateUserField("location", new GeoPoint(lat, lng), requireContext());
                             }
                         } catch (IOException e) {
                             locationText += "\nUnable to get exact place name.";
@@ -363,6 +373,8 @@ public class ProfileFragment extends BaseFragment {
                 })
                 .addOnFailureListener(e -> displayLocation.setText("Failed to get location."));
     }
+
+
 
     private void setupEditProfile() {
         editButton.setOnClickListener(v -> {

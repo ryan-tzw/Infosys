@@ -9,11 +9,21 @@ public class QuadTree {
     List<Point> points;
     boolean divided = false;
     QuadTree northeast, northwest, southeast, southwest;
+    String quadId;
 
     public QuadTree(GeoRect boundary, int capacity) {
         this.boundary = boundary;
         this.capacity = capacity;
         this.points = new ArrayList<>();
+    }
+
+    public QuadTree(GeoRect boundary, int capacity, String quadId) {
+        this(boundary, capacity);
+        this.quadId = quadId;
+    }
+
+    public String getQuadId() {
+        return quadId;
     }
 
     public boolean insert(Point point) {
