@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +30,7 @@ import com.example.infosys.model.Chat;
 import com.example.infosys.model.Message;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
+import com.example.infosys.viewmodels.ChatListViewModel;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
@@ -37,6 +39,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,6 +58,7 @@ public class ChatActivity extends AppCompatActivity {
     private boolean isLoadingMore = false;
     private boolean hasUserScrolled = false;
     private ListenerRegistration messageListener;
+    private ChatListViewModel viewModel;
 
 
     @SuppressLint("NotifyDataSetChanged")
@@ -73,6 +77,7 @@ public class ChatActivity extends AppCompatActivity {
         initialiseData();
         initialiseUI();
         setupRecyclerView();
+        initViewModel();
 
         chatManager.getChat(chatId)
                 .addOnSuccessListener(chat -> {
@@ -94,6 +99,22 @@ public class ChatActivity extends AppCompatActivity {
 
             return WindowInsetsCompat.CONSUMED;
         });
+    }
+
+    private void initViewModel() {
+//        viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+
+//        String otherUserId = getIntent().getStringExtra("otherUserId");
+//        viewModel.observeAvailability(Collections.singletonList(otherUserId));
+//
+//        viewModel.getAvailabilityLiveData().observe(this, map -> {
+//            Boolean isOnline = map.get(otherUserId);
+//            String status = (isOnline != null && isOnline) ? "Online" : "Offline";
+//            if (getSupportActionBar() != null) {
+//                getSupportActionBar().setSubtitle(status);
+//            }
+//        });
+
     }
 
     private void loadInitialMessages() {
@@ -267,16 +288,34 @@ public class ChatActivity extends AppCompatActivity {
             Objects.requireNonNull(getSupportActionBar()).setTitle(groupName);
         } else {
             String friendId = UserManager.getInstance().getFriendId(chat);
+            Log.d(TAG, "populateData: Friend ID: " + friendId);
+
             UserManager.getInstance().getUser(friendId)
                     .addOnSuccessListener(friend -> {
                         Objects.requireNonNull(getSupportActionBar()).setTitle(friend.getUsername());
-                        Objects.requireNonNull(getSupportActionBar()).setSubtitle("offline");
+
+                        setupViewModel(friendId);
                     })
                     .addOnFailureListener(e -> {
                         Objects.requireNonNull(getSupportActionBar()).setTitle("Unknown user");
                         Log.e(TAG, "onBindViewHolder: Failed to get friend id", e);
                     });
         }
+    }
+
+    private void setupViewModel(String friendId) {
+        viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+
+        viewModel.observeAvailability(Collections.singletonList(friendId));
+
+        viewModel.getAvailabilityLiveData().observe(this, availabilityMap -> {
+            Boolean isOnline = availabilityMap.get(friendId);
+            String status = (isOnline != null && isOnline) ? "Online" : null;
+
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setSubtitle(status);
+            }
+        });
     }
 
     private boolean isUserAtBottom() {
