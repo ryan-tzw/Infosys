@@ -23,6 +23,8 @@
             android:minHeight="?attr/actionBarSize"
             app:menu="@menu/top_app_bar"
             app:navigationIcon="@drawable/ic_back"
+            app:subtitleCentered="true"
+            app:titleCentered="true"
             app:titleTextColor="@color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>

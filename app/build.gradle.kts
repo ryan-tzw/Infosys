@@ -63,6 +63,5 @@ dependencies {
     implementation(libs.firebase.inappmessaging.display)
     implementation(libs.firebase.analytics)
     implementation(libs.okhttp)
-
-
+    implementation(libs.lifecycle.process)
 }

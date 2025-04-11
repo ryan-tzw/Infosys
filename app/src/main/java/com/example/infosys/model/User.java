@@ -1,5 +1,7 @@
 package com.example.infosys.model;
 
+import com.google.firebase.firestore.GeoPoint;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -16,9 +18,10 @@ public class User implements Serializable {
     private List<String> communitiesList;
     private String bio;
     private List<String> interests;
-    private String location;
     private Timestamp dateOfBirth;
     private String fcmToken;
+    private GeoPoint location;
+    private boolean available;
 
     public User() {
     }
@@ -33,9 +36,10 @@ public class User implements Serializable {
         this.profilePictureUrl = "";
         this.bio = "";
         this.interests = new ArrayList<>();
-        this.location = "";
         this.dateOfBirth = null;
         this.fcmToken = "";
+        this.location = null;
+        this.available = false;
     }
 
     public String getFcmToken() {
@@ -86,12 +90,20 @@ public class User implements Serializable {
         return interests;
     }
 
-    public String getLocation() {
+    public GeoPoint getLocation() {
         return location;
+    }
+
+    public void setLocation(GeoPoint location) {
+        this.location = location;
     }
 
     public Timestamp getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public boolean isAvailable() {
+        return available;
     }
 
     @Override

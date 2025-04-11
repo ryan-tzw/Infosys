@@ -77,7 +77,7 @@ public class AndroidUtil {
     public static void setToolbarPadding(View view) {
         ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
             int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-            int adjustedPadding = (int) (topInset * 0.5);
+            int adjustedPadding = (int) (topInset * 0.75);
 
             v.setPadding(v.getPaddingLeft(), adjustedPadding, v.getPaddingRight(), v.getPaddingBottom());
 
