@@ -1,12 +1,7 @@
 package com.example.infosys.activities;
 
-import static com.example.infosys.utils.FirebaseUtil.currentUserDetails;
-
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -43,9 +38,10 @@ public class ViewProfilesActivity extends AppCompatActivity {
     private String userId;
     private User user;
     private List<Post> postsList;
+    private boolean isFriend = false;
 
     private ImageView profileImage;
-    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, addFriendbtn;
+    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, addFriendbtn, noPost;
     private RecyclerView postsRecyclerView;
     private ConstraintLayout friendsCountLayout, communitiesCountLayout;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -59,7 +55,6 @@ public class ViewProfilesActivity extends AppCompatActivity {
 
         userId = getIntent().getStringExtra("userId");
 
-        // Check if userId is null or empty
         if (userId == null || userId.isEmpty()) {
             Log.e(TAG, "User ID is missing in the Intent.");
             Toast.makeText(this, "User ID is missing.", Toast.LENGTH_SHORT).show();
@@ -76,7 +71,6 @@ public class ViewProfilesActivity extends AppCompatActivity {
         instantiateViews();
         getProfilePicture();
 
-        // Use userId from Intent to fetch user data
         UserManager.getInstance().getUser(userId)
                 .addOnSuccessListener(user -> {
                     this.user = user;
@@ -85,7 +79,6 @@ public class ViewProfilesActivity extends AppCompatActivity {
                     alreadyFriend();
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to get user data", e));
-
 
         setupPostsRecyclerView();
         setupSwipeToRefresh();
@@ -102,6 +95,7 @@ public class ViewProfilesActivity extends AppCompatActivity {
         postsRecyclerView = findViewById(R.id.profile_recycler_view);
         swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         addFriendbtn = findViewById(R.id.add_as_friend);
+        noPost = findViewById(R.id.no_posts_text);
     }
 
     private void populateData() {
@@ -133,6 +127,9 @@ public class ViewProfilesActivity extends AppCompatActivity {
                     postsList.addAll(posts);
                     adapter.notifyDataSetChanged();
                     Log.d(TAG, "Loaded " + posts.size() + " posts.");
+                    if (posts.size() == 0){
+                        noPost.setVisibility(View.VISIBLE);
+                    }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to load posts", e));
     }
@@ -163,12 +160,13 @@ public class ViewProfilesActivity extends AppCompatActivity {
         if (user == null) return;
 
         addFriendbtn.setOnClickListener(v -> {
-            // Change background tint to primary color
-            int primaryColor = getColor(R.color.primaryColor);
-            ViewCompat.setBackgroundTintList(addFriendbtn, ColorStateList.valueOf(primaryColor));
-            addFriendbtn.setText("Added");
-            postsRecyclerView.setVisibility(View.VISIBLE);
-            addFriend(user, context);
+            if (isFriend) {
+                removeFriend(user, context);
+            } else {
+                addFriend(user, context);
+            }
+            isFriend = !isFriend;
+            updateFriendButtonUI();
         });
     }
 
@@ -194,11 +192,11 @@ public class ViewProfilesActivity extends AppCompatActivity {
 
                         if (!alreadyFriend) {
                             friendsList.add(friendUser);
-
                             FirebaseUtil.updateUserField("friendsList", friendsList, context);
                             Long currentCount = documentSnapshot.getLong("friendsCount");
                             long updatedCount = (currentCount != null ? currentCount : 0) + 1;
                             FirebaseUtil.updateUserField("friendsCount", updatedCount, context);
+                            Toast.makeText(context, "Friend added", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(context, "This user is already your friend", Toast.LENGTH_SHORT).show();
                         }
@@ -206,6 +204,32 @@ public class ViewProfilesActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(context, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private static void removeFriend(User friendUser, Context context) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(currentUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User currentUser = documentSnapshot.toObject(User.class);
+                        List<User> friendsList = currentUser.getFriendsList();
+                        if (friendsList == null) friendsList = new ArrayList<>();
+
+                        friendsList.removeIf(u -> u.getUid().equals(friendUser.getUid()));
+                        FirebaseUtil.updateUserField("friendsList", friendsList, context);
+
+                        Long currentCount = documentSnapshot.getLong("friendsCount");
+                        long updatedCount = (currentCount != null && currentCount > 0) ? currentCount - 1 : 0;
+                        FirebaseUtil.updateUserField("friendsCount", updatedCount, context);
+                        Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Error removing friend: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -218,27 +242,33 @@ public class ViewProfilesActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         User currentUser = documentSnapshot.toObject(User.class);
                         List<User> friendsList = currentUser.getFriendsList();
-
                         if (friendsList == null) friendsList = new ArrayList<>();
 
-                        boolean alreadyFriend = false;
+                        isFriend = false;
                         for (User u : friendsList) {
                             if (u.getUid().equals(user.getUid())) {
-                                alreadyFriend = true;
+                                isFriend = true;
                                 break;
                             }
                         }
-                        if (alreadyFriend) {
-                            int primaryColor = getColor(R.color.primaryColor);
-                            ViewCompat.setBackgroundTintList(addFriendbtn, ColorStateList.valueOf(primaryColor));
-                            addFriendbtn.setText("Added");
-                            postsRecyclerView.setVisibility(View.VISIBLE);
-                            addFriendbtn.setEnabled(false);  // Disable the button if already a friend
-                        }
-
+                        updateFriendButtonUI();
                     }
                 });
     }
+
+    private void updateFriendButtonUI() {
+        if (isFriend) {
+            int primaryColor = getColor(R.color.primaryColor);
+            ViewCompat.setBackgroundTintList(addFriendbtn, ColorStateList.valueOf(primaryColor));
+            addFriendbtn.setText("Friends");
+            noPost.setVisibility(View.VISIBLE);
+            postsRecyclerView.setVisibility(View.VISIBLE);
+        } else {
+            int whiteColor = getColor(android.R.color.white);
+            ViewCompat.setBackgroundTintList(addFriendbtn, ColorStateList.valueOf(whiteColor));
+            addFriendbtn.setText("Add as Friend");
+            noPost.setVisibility(View.GONE);
+            postsRecyclerView.setVisibility(View.GONE);
+        }
     }
-
-
+}

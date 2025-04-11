@@ -48,7 +48,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginStart="10dp"
         android:background="@drawable/status_indicator"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/chat_image"
         app:layout_constraintEnd_toEndOf="@id/chat_image" />
 

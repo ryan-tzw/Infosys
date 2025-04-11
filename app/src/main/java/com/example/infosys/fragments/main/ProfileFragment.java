@@ -66,7 +66,7 @@ public class ProfileFragment extends BaseFragment {
 
     private ImageView profileImage, locationIcon;
     private ImageButton editButton;
-    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, displayLocation;
+    private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, displayLocation, noPost;
     private RecyclerView postsRecyclerView;
     private ConstraintLayout friendsCountLayout, communitiesCountLayout;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -156,6 +156,7 @@ public class ProfileFragment extends BaseFragment {
         displayLocation = view.findViewById(R.id.displayLocation);
         locationIcon = view.findViewById(R.id.location_icon);
         editButton = view.findViewById(R.id.edit_btn);
+        noPost = view.findViewById(R.id.no_posts_text);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         locationPermissionRequest = registerForActivityResult(
@@ -193,6 +194,9 @@ public class ProfileFragment extends BaseFragment {
                     postsList.addAll(posts);
                     adapter.notifyDataSetChanged();
                     Log.d(TAG, "Loaded " + posts.size() + " posts.");
+                    if (posts.size() == 0){
+                        noPost.setVisibility(View.VISIBLE);
+                    }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to load posts", e));
     }
