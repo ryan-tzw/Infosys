@@ -12,32 +12,41 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private boolean isAuthCheckComplete = false;
+    private boolean hasNavigated = false; // prevents double navigation
+    private final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Theme_Infosys);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash);
+    }
 
-        // Start async task: Firebase auth check
-        checkAuthentication();
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Only trigger once
+        if (!hasNavigated) {
+            handler.postDelayed(this::checkAuthentication, 2000);
+            hasNavigated = true;
+        }
     }
 
     private void checkAuthentication() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        // Simulate delay (e.g., checking Firestore)
-        new Handler().postDelayed(() -> {
-            isAuthCheckComplete = true;
+        if (user != null) {
+            startActivity(new Intent(this, MainActivity.class));
+        } else {
+            startActivity(new Intent(this, LoginActivity.class));
+        }
+        finish(); // Kill splash
+    }
 
-            // Navigate based on login state
-            if (user != null) {
-                startActivity(new Intent(this, MainActivity.class));
-            } else {
-                startActivity(new Intent(this, LoginActivity.class));
-            }
-            finish(); // Kill splash
-        }, 2000); // delay to simulate loading
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacksAndMessages(null); // clean up handler
     }
 }
