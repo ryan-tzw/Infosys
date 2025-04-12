@@ -33,7 +33,7 @@ public class MainManager {
 
     public FragmentManager getNavFragmentManager(Nav fragmentType) {
         Fragment navFragment = mainActivity.getSupportFragmentManager().findFragmentByTag(fragmentType.toString());
-        Log.d(TAG, "getFragmentManager: Getting fragment: " + fragmentType);
+        Log.d(TAG, "getNavFragmentManager: Getting fragment: " + fragmentType);
         if (navFragment != null) {
             return navFragment.getChildFragmentManager();
         }

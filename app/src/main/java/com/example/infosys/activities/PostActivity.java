@@ -102,7 +102,6 @@ public class PostActivity extends AppCompatActivity {
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-
         MaterialToolbar toolbar = findViewById(R.id.app_bar);
         AndroidUtil.setToolbarPadding(toolbar);
 

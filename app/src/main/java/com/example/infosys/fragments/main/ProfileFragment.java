@@ -7,6 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,6 +20,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.MenuProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -25,14 +29,17 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.infosys.R;
+import com.example.infosys.activities.EditProfileActivity;
 import com.example.infosys.adapters.UserPostsAdapter;
 import com.example.infosys.fragments.main.common.BaseFragment;
+import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Post;
 import com.example.infosys.model.User;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.github.dhaval2404.imagepicker.ImagePicker;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
@@ -40,7 +47,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProfileFragment extends BaseFragment {
+public class ProfileFragment extends BaseFragment implements MenuProvider, ToolbarConfigurable {
     private static final String TAG = "ProfileFragment";
     private static final String ARG_USER_ID = "userId";
     UserPostsAdapter adapter;
@@ -51,6 +58,13 @@ public class ProfileFragment extends BaseFragment {
     private RecyclerView postsRecyclerView;
     private User user;
     private String userId;
+    private final ActivityResultLauncher<Intent> editProfileLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Log.d(TAG, "Activity result ok, reloading profile data");
+                    refreshData();
+                }
+            });
     private List<Post> postsList;
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -83,23 +97,56 @@ public class ProfileFragment extends BaseFragment {
         instantiateViews(view);
         getProfilePicture();
 
-        UserManager.getInstance().getUser(userId)
-                .addOnSuccessListener(user -> {
-                    this.user = user;
-                    populateData();
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "onCreateView: Failed to get user data", e));
+        refreshData();
 
         setupPostsRecyclerView(view);
 
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(() -> {
+            refreshData();
             loadPosts();
             swipeRefreshLayout.setRefreshing(false);
         });
 
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.profile, menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        Log.d(TAG, "onMenuItemSelected: ProfileFragment: " + menuItem);
+        if (menuItem.getItemId() == R.id.action_edit_profile) {
+            if (userId.equals(FirebaseUtil.getCurrentUserUid())) {
+                editProfileLauncher.launch(new Intent(requireContext(), EditProfileActivity.class));
+            } else {
+                AndroidUtil.showToast(requireContext(), "You cannot edit this profile");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void configureToolbar(MaterialToolbar toolbar) {
+        Log.d(TAG, "configureToolbar: " + toolbar);
+        toolbar.inflateMenu(R.menu.profile);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MaterialToolbar toolbar = requireActivity().findViewById(R.id.app_bar);
+        configureToolbar(toolbar);
     }
 
     private void instantiateViews(View view) {
@@ -124,6 +171,15 @@ public class ProfileFragment extends BaseFragment {
         } else {
             txtAboutMe.setText(user.getBio());
         }
+    }
+
+    private void refreshData() {
+        UserManager.getInstance().getUser(userId)
+                .addOnSuccessListener(user -> {
+                    this.user = user;
+                    populateData();
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "refreshData: Failed to get user data", e));
     }
 
     private void setupPostsRecyclerView(View view) {

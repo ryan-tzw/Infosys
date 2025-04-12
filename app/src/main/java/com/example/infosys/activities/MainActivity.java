@@ -17,8 +17,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
@@ -56,11 +58,11 @@ public class MainActivity extends AppCompatActivity {
                             .show();
                 }
             });
-
     MaterialToolbar topAppBar;
-
+    private int lastSelectedMenu = R.menu.home;
     private Fragment homeFragment, communitiesFragment, notificationsFragment, chatsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
+    private MenuProvider currentMenuProvider;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -105,10 +107,9 @@ public class MainActivity extends AppCompatActivity {
 
         initialiseAppBar(topAppBar);
         initialiseFragments();
-
-
         handleIntent(getIntent());
     }
+
 
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
@@ -192,8 +193,6 @@ public class MainActivity extends AppCompatActivity {
         FirebaseMessaging.getInstance().getToken()
                 .addOnSuccessListener(token -> {
                     Log.d(TAG, "onCreate: User token: " + token);
-
-                    // Save the token to Firestore
                     FirebaseUtil.updateFcmToken(token);
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "onCreate: Failed to get FCM token. ", e));
@@ -203,18 +202,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        Log.d(TAG, "onResume called");
-
         MaterialToolbar toolbar = findViewById(R.id.app_bar);
-
         FragmentManager fm = getSelectedTabFM();
         Fragment visibleChild = getTopFragmentOf(fm);
 
         Log.d(TAG, "onResume: visibleChild: " + visibleChild);
 
         if (visibleChild instanceof ToolbarConfigurable) {
-            Log.d(TAG, "onResume: ToolbarConfigurable" + visibleChild);
+            Log.d(TAG, "onResume: ToolbarConfigurable: " + visibleChild);
             ((ToolbarConfigurable) visibleChild).configureToolbar(toolbar);
         }
     }
@@ -227,6 +222,12 @@ public class MainActivity extends AppCompatActivity {
             return MainManager.getInstance().getNavFragmentManager(Nav.HOME);
         if (selectedItemId == R.id.nav_communities)
             return MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES);
+        if (selectedItemId == R.id.nav_notifications)
+            return MainManager.getInstance().getNavFragmentManager(Nav.NOTIFICATIONS);
+        if (selectedItemId == R.id.nav_chats)
+            return MainManager.getInstance().getNavFragmentManager(Nav.CHATS);
+        if (selectedItemId == R.id.nav_profile)
+            return MainManager.getInstance().getNavFragmentManager(Nav.PROFILE);
 
         return null;
     }
@@ -243,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return null;
     }
-
 
     private void initialiseAppBar(MaterialToolbar appbar) {
         setSupportActionBar(appbar);
@@ -287,19 +287,32 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .hide(activeFragment)
                     .show(targetFragment)
+                    .runOnCommit(() -> updateToolbarMenuForFragment(targetFragment))
                     .commit();
             activeFragment = targetFragment;
         }
-
-        inflateMenu(menuResId);
+        lastSelectedMenu = menuResId;
     }
 
-    private void inflateMenu(int menuResId) {
+    private void updateToolbarMenuForFragment(Fragment navFragment) {
         topAppBar.getMenu().clear();
         topAppBar.inflateMenu(R.menu.top_app_bar);
-        topAppBar.inflateMenu(menuResId);
-    }
 
+        // Remove old provider if exists
+        if (currentMenuProvider != null) {
+            removeMenuProvider(currentMenuProvider);
+            currentMenuProvider = null;
+        }
+
+        // Check for visible child fragment inside the NavFragment
+        FragmentManager fm = navFragment.getChildFragmentManager();
+        Fragment innerFragment = getTopFragmentOf(fm);
+        if (innerFragment instanceof MenuProvider) {
+            currentMenuProvider = (MenuProvider) innerFragment;
+            addMenuProvider(currentMenuProvider, this, Lifecycle.State.RESUMED);
+            getMenuInflater().inflate(lastSelectedMenu, topAppBar.getMenu());
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -332,7 +345,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 }

@@ -126,6 +126,32 @@ public class UserManager {
                 });
     }
 
+    public Task<Void> updateUsername(String userId, String username) {
+        return db.collection(Collections.USERS).document(userId)
+                .update("username", username, "usernameLowercase", username.toLowerCase())
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "updateUsername: Username updated successfully");
+                        return null;
+                    } else {
+                        throw task.getException();
+                    }
+                });
+    }
+
+    public Task<Void> updateBio(String userId, String bio) {
+        return db.collection(Collections.USERS).document(userId)
+                .update("bio", bio)
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "updateBio: Bio updated successfully");
+                        return null;
+                    } else {
+                        throw task.getException();
+                    }
+                });
+    }
+
 
     /*
      Functions for profile picture

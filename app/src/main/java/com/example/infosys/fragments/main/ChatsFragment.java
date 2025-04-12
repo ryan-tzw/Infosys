@@ -19,7 +19,6 @@ import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.chats.CreateDmFragment;
 import com.example.infosys.fragments.chats.CreateGroupChatFragment;
 import com.example.infosys.fragments.main.common.BaseFragment;
-import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.ChatManager;
 import com.example.infosys.managers.MainManager;
 import com.example.infosys.model.Chat;
@@ -32,7 +31,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatsFragment extends BaseFragment implements ToolbarConfigurable {
+public class ChatsFragment extends BaseFragment {
     private static final String TAG = "ChatsFragment";
     private final List<Chat> chatList = new ArrayList<>();
     private final List<String> userIds = new ArrayList<>();
@@ -149,10 +148,5 @@ public class ChatsFragment extends BaseFragment implements ToolbarConfigurable {
     private void showScreen() {
         progressIndicator.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
     }
 }

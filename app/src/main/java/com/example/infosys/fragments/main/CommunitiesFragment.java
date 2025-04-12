@@ -1,7 +1,6 @@
 package com.example.infosys.fragments.main;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,11 +58,5 @@ public class CommunitiesFragment extends BaseFragment {
         }).attach();
 
         return view;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: ");
     }
 }

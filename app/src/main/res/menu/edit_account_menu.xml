@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_edit_profile"
+        android:id="@+id/submit_button"
+        android:name="submit"
         android:iconTint="@color/white"
-        android:title="Settings"
-        android:icon="@drawable/ic_settings"
+        android:title="Done"
         app:showAsAction="ifRoom" />
 </menu>
