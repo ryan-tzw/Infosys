@@ -3,34 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp">
+    android:paddingVertical="12dp">
 
-    <!-- Profile Picture -->
     <ImageView
         android:id="@+id/chat_image"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginStart="16dp"
         android:contentDescription="@string/profile_picture"
         android:src="@drawable/ic_launcher_background"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Status Dot -->
-    <View
-        android:id="@+id/statusIndicator"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginBottom="4dp"
-        android:layout_marginEnd="4dp"
-        android:background="@drawable/status_indicator"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/chat_image"
-        app:layout_constraintEnd_toEndOf="@id/chat_image" />
-
-    <!-- Chat Name -->
     <TextView
         android:id="@+id/chat_name"
         android:layout_width="0dp"
@@ -38,21 +21,20 @@
         android:layout_marginStart="16dp"
         android:text="@string/friend_name"
         android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/chat_image"
-        app:layout_constraintTop_toTopOf="@id/chat_image"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Last Message -->
     <TextView
         android:id="@+id/last_message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
         android:text="@string/last_message"
         android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/chat_image"
-        app:layout_constraintTop_toBottomOf="@id/chat_name"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/chat_name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
