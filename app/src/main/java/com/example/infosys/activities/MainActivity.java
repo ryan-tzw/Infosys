@@ -366,4 +366,18 @@ public class MainActivity extends AppCompatActivity {
         };
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
+
+    public void navigateBackToCommunities() {
+        // This already exists in your code
+        switchFragment(communitiesFragment, R.menu.communities);
+
+        // Clear any back stack entries related to community fragments
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+
+        // Ensure bottom nav is selected
+        bottomNavigationView.setSelectedItemId(R.id.nav_communities);
+    }
 }

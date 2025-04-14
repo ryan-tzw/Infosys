@@ -31,6 +31,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.infosys.R;
 import com.example.infosys.activities.CreatePostActivity;
+import com.example.infosys.activities.MainActivity;
 import com.example.infosys.activities.PostActivity;
 import com.example.infosys.adapters.PostsViewPagerAdapter;
 import com.example.infosys.enums.Nav;
@@ -44,6 +45,7 @@ import com.example.infosys.utils.FirebaseUtil;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -174,9 +176,20 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
     public void configureToolbar(MaterialToolbar toolbar) {
         toolbar.setNavigationIcon(R.drawable.ic_back);
         toolbar.setNavigationOnClickListener(v -> {
-            toolbar.post(() -> {
-                MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).popBackStack();
-            });
+            // Safely handle the back navigation
+            if (getActivity() instanceof MainActivity) {
+                MainActivity activity = (MainActivity) getActivity();
+
+                // Post to ensure UI operations happen on the main thread
+                toolbar.post(() -> {
+                    // Check if fragment manager state is saved
+                    if (!activity.getSupportFragmentManager().isStateSaved()) {
+                        activity.navigateBackToCommunities();
+                    } else {
+                        Log.e(TAG, "Cannot navigate back: FragmentManager state is already saved");
+                    }
+                });
+            }
         });
     }
 
