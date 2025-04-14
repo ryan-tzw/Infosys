@@ -1,5 +1,6 @@
 package com.example.infosys.fragments.main;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,6 +52,7 @@ public class HomeFragment extends BaseFragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private ViewPager2 communityViewPager;
     private LinearLayout dotIndicator;
+    private Context context;
 
     public HomeFragment() {
     }
@@ -123,7 +125,12 @@ public class HomeFragment extends BaseFragment {
         AndroidUtil.setupDivider(view, recyclerView);
 
         List<Community> popularCommunities = new ArrayList<>();
-        CommunityAdapter adapter = new CommunityAdapter(popularCommunities, MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
+        CommunityAdapter adapter = new CommunityAdapter(popularCommunities,
+                MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
+
+        // Enable the intent-based navigation
+        adapter.enableIntentNavigation(true);
+
         recyclerView.setAdapter(adapter);
 
         communitiesManager.getPopularCommunities(popularCommunitiesList -> {
@@ -131,9 +138,6 @@ public class HomeFragment extends BaseFragment {
             popularCommunities.clear();
             popularCommunities.addAll(popularCommunitiesList);
             adapter.notifyDataSetChanged();
-
-//            popularCommunitiesLoaded = true;
-//            checkIfAllDataLoaded();
         });
     }
 
@@ -260,5 +264,8 @@ public class HomeFragment extends BaseFragment {
         });
     }
 
+    public void setContext(Context context) {
+        this.context = context;
+    }
 
 }

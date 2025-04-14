@@ -36,6 +36,7 @@ import com.example.infosys.activities.PostActivity;
 import com.example.infosys.adapters.PostsViewPagerAdapter;
 import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.communities.posts.PostListFragment;
+import com.example.infosys.fragments.main.common.NavFragment;
 import com.example.infosys.interfaces.ToolbarConfigurable;
 import com.example.infosys.managers.CommunityManager;
 import com.example.infosys.managers.MainManager;
@@ -137,6 +138,11 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
         super.onViewCreated(view, savedInstanceState);
         MenuHost menuHost = requireActivity();
         menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+
+        // Hide NavFragment if it exists in the parent
+        if (getParentFragment() instanceof NavFragment) {
+            ((ViewGroup) getParentFragment().requireView()).setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -181,33 +187,7 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
                 MainActivity activity = (MainActivity) getActivity();
 
                 // Post to ensure UI operations happen on the main thread
-                toolbar.post(() -> {
-                    // Check where we came from
-                    boolean cameFromMainActivity = false;
-
-                    // Check the fragment back stack to determine the source
-                    FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                    if (fragmentManager.getBackStackEntryCount() > 0) {
-                        FragmentManager.BackStackEntry lastEntry = fragmentManager.getBackStackEntryAt(
-                                fragmentManager.getBackStackEntryCount() - 1
-                        );
-                        // If the backstack entry name does NOT contain "CreateCommunity", assume MainActivity
-                        cameFromMainActivity = lastEntry.getName() == null ||
-                                !lastEntry.getName().contains("CreateCommunity");
-                    }
-
-                    if (!fragmentManager.isStateSaved()) {
-                        if (cameFromMainActivity) {
-                            // Case: Came from MainActivity → Use if-statement logic
-                            activity.navigateBackToCommunities();
-                        } else {
-                            // Case: Came from elsewhere (e.g., CreateCommunityActivity) → Use else-statement logic
-                            MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).popBackStack();
-                        }
-                    } else {
-                        Log.e(TAG, "Cannot navigate back: FragmentManager state is already saved");
-                    }
-                });
+                toolbar.post(activity::navigateBackToCommunities);
             }
         });
     }

@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "handleIntent: Navigating to newly created community with id: " + communityId);
 
                 bottomNavigationView.setSelectedItemId(R.id.nav_communities);
+                findViewById(R.id.bottom_navigation).setVisibility(BottomNavigationView.GONE);
                 CommunityFragment fragment = CommunityFragment.newInstance(communityId);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container_view, fragment)
@@ -370,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
     public void navigateBackToCommunities() {
         // This already exists in your code
         switchFragment(communitiesFragment, R.menu.communities);
-
+        findViewById(R.id.bottom_navigation).setVisibility(BottomNavigationView.VISIBLE);
         // Clear any back stack entries related to community fragments
         FragmentManager fm = getSupportFragmentManager();
         if (fm.getBackStackEntryCount() > 0) {
