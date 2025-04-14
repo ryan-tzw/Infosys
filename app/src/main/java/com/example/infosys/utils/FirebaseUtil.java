@@ -107,6 +107,19 @@ public class FirebaseUtil {
         return FirebaseStorage.getInstance().getReference().child("profile_pictures").child(userId);
     }
 
+    public static StorageReference getCommunityImagesStorageRef(String communityId) {
+        if (communityId == null || communityId.isEmpty()) {
+            return null;
+        }
+        return FirebaseStorage.getInstance()
+                .getReference()
+                .child("community_images")
+                .child(communityId);
+    }
+
+
+
+
     public static void logoutUser() {
         UserManager.getInstance().clearCurrentUserData();
         FirebaseAuth.getInstance().signOut();

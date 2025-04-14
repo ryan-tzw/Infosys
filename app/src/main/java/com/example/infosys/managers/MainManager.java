@@ -37,6 +37,8 @@ public class MainManager {
         if (navFragment != null) {
             return navFragment.getChildFragmentManager();
         }
+
+
         return null;
     }
 }

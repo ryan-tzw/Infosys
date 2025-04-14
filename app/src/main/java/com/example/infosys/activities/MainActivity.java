@@ -212,7 +212,26 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onResume: ToolbarConfigurable: " + visibleChild);
             ((ToolbarConfigurable) visibleChild).configureToolbar(toolbar);
         }
+
+        // Check if a new community was created and navigate to it
+        if (getIntent() != null && getIntent().hasExtra("newCommunity")) {
+            boolean newCommunity = getIntent().getBooleanExtra("newCommunity", false);
+            if (newCommunity) {
+                String communityId = getIntent().getStringExtra("communityId");
+
+                Log.d(TAG, "onResume: New community created, navigating to it");
+
+                // Navigate to the new community's fragment
+                bottomNavigationView.setSelectedItemId(R.id.nav_communities);
+                CommunityFragment fragment = CommunityFragment.newInstance(communityId);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container_view, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        }
     }
+
 
 
     private FragmentManager getSelectedTabFM() {

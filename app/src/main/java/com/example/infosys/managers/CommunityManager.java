@@ -321,8 +321,10 @@ public class CommunityManager {
     }
 
     public Task<Uri> getProfilePicture(String communityId) {
-        String path = String.format("communities/%s/profile", communityId);
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child(path);
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child("community_images/" + communityId);
+
         return ref.getDownloadUrl();
     }
 
@@ -338,4 +340,6 @@ public class CommunityManager {
     public interface OnUserMemberCheck {
         void onUserMemberCheck(boolean isMember);
     }
+
+
 }

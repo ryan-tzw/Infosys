@@ -19,7 +19,7 @@ public class Community {
         // Required empty public constructor for Firestore
     }
 
-    // Constructor for creating a new community
+    // Constructor for creating a new community (without image)
     public Community(String id, String name, String description) {
         this.id = id;
         this.name = name;
@@ -30,6 +30,21 @@ public class Community {
         this.adminIds = new ArrayList<>();
         this.ownerId = null;
         this.bannedUserIds = new ArrayList<>();
+        this.imageUrl = null;
+    }
+
+    // Constructor for creating a new community (with image)
+    public Community(String id, String name, String description, String imageUrl) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.memberCount = 0;
+        this.tags = new ArrayList<>();
+        this.isPrivate = false;
+        this.adminIds = new ArrayList<>();
+        this.ownerId = null;
+        this.bannedUserIds = new ArrayList<>();
+        this.imageUrl = imageUrl;
     }
 
     public String getId() {
@@ -106,5 +121,9 @@ public class Community {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
