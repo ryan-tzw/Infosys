@@ -26,8 +26,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.view.MenuProvider;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -46,10 +46,10 @@ import com.example.infosys.model.User;
 import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.github.dhaval2404.imagepicker.ImagePicker;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
@@ -163,7 +163,7 @@ public class ProfileFragment extends BaseFragment implements MenuProvider, Toolb
     @Override
     public void configureToolbar(MaterialToolbar toolbar) {
         Log.d(TAG, "configureToolbar: " + toolbar);
-        toolbar.inflateMenu(R.menu.profile);
+//        toolbar.inflateMenu(R.menu.profile);
     }
 
     @Override

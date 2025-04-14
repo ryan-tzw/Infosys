@@ -1,34 +1,38 @@
 package com.example.infosys.fragments.main;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
-import androidx.recyclerview.widget.LinearSnapHelper;
-import androidx.recyclerview.widget.SnapHelper;
-
 
 import com.example.infosys.R;
+import com.example.infosys.adapters.CommunityAdapter;
 import com.example.infosys.adapters.UserItemAdapter;
+import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.main.common.BaseFragment;
+import com.example.infosys.managers.CommunitiesManager;
+import com.example.infosys.managers.MainManager;
 import com.example.infosys.managers.UserManager;
+import com.example.infosys.model.Community;
 import com.example.infosys.model.GeoRect;
 import com.example.infosys.model.Point;
 import com.example.infosys.model.QuadTree;
 import com.example.infosys.model.Quadrant;
 import com.example.infosys.model.User;
+import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.GeoPoint;
@@ -48,7 +52,8 @@ public class HomeFragment extends BaseFragment {
     private ViewPager2 communityViewPager;
     private LinearLayout dotIndicator;
 
-    public HomeFragment() {}
+    public HomeFragment() {
+    }
 
     public static HomeFragment newInstance() {
         return new HomeFragment();
@@ -64,7 +69,9 @@ public class HomeFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d("HomeFragment", "onCreateView called");
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        setupPopularCommunities(view);
+        return view;
     }
 
     @Override
@@ -75,7 +82,6 @@ public class HomeFragment extends BaseFragment {
         setupSwipeToRefresh(view);
 
         // Initialize views
-        communityViewPager = view.findViewById(R.id.communityViewPager);
         dotIndicator = view.findViewById(R.id.dotIndicator);
         nearbyUsersRecyclerView = view.findViewById(R.id.nearbyUsersRecyclerView);
 
@@ -108,6 +114,29 @@ public class HomeFragment extends BaseFragment {
 
         setupSwipeToRefresh(view);
     }
+
+    private void setupPopularCommunities(View view) {
+        CommunitiesManager communitiesManager = CommunitiesManager.getInstance();
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view_popular_communities);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        AndroidUtil.setupDivider(view, recyclerView);
+
+        List<Community> popularCommunities = new ArrayList<>();
+        CommunityAdapter adapter = new CommunityAdapter(popularCommunities, MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
+        recyclerView.setAdapter(adapter);
+
+        communitiesManager.getPopularCommunities(popularCommunitiesList -> {
+            Log.d(TAG, "setupPopularCommunities: Popular communities list retrieved: " + popularCommunitiesList);
+            popularCommunities.clear();
+            popularCommunities.addAll(popularCommunitiesList);
+            adapter.notifyDataSetChanged();
+
+//            popularCommunitiesLoaded = true;
+//            checkIfAllDataLoaded();
+        });
+    }
+
 
     public void getCurrentUserGeoPointAndFindNearbyUsers() {
         FirebaseUtil.getCurrentUserGeoPoint(new FirebaseUtil.GeoPointCallback() {

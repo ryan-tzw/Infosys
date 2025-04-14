@@ -31,7 +31,6 @@ public class AllCommunitiesFragment extends Fragment {
     private static final String TAG = "AllCommunitiesFragment";
     private CommunitiesManager communitiesManager;
     private AllCommunitiesViewModel viewModel;
-    private boolean popularCommunitiesLoaded = false;
     private boolean allCommunitiesLoaded = false;
     private CircularProgressIndicator progressIndicator;
     private NestedScrollView scrollView;
@@ -62,7 +61,6 @@ public class AllCommunitiesFragment extends Fragment {
         scrollView = view.findViewById(R.id.nested_scroll_view);
 
         setupAllCommunities(view);
-        setupPopularCommunities(view);
         return view;
     }
 
@@ -107,29 +105,8 @@ public class AllCommunitiesFragment extends Fragment {
         });
     }
 
-    private void setupPopularCommunities(View view) {
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view_popular_communities);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        AndroidUtil.setupDivider(view, recyclerView);
-
-        List<Community> popularCommunities = new ArrayList<>();
-        CommunityAdapter adapter = new CommunityAdapter(popularCommunities, MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
-        recyclerView.setAdapter(adapter);
-
-        communitiesManager.getPopularCommunities(popularCommunitiesList -> {
-            Log.d(TAG, "setupPopularCommunities: Popular communities list retrieved: " + popularCommunitiesList);
-            popularCommunities.clear();
-            popularCommunities.addAll(popularCommunitiesList);
-            adapter.notifyDataSetChanged();
-
-            popularCommunitiesLoaded = true;
-            checkIfAllDataLoaded();
-        });
-    }
-
     private void checkIfAllDataLoaded() {
-        if (popularCommunitiesLoaded && allCommunitiesLoaded) {
+        if (allCommunitiesLoaded) {
             progressIndicator.setVisibility(View.GONE);
             scrollView.setVisibility(View.VISIBLE);
         }
