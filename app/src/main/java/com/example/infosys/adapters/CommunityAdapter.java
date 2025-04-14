@@ -44,7 +44,6 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.Comm
 
         Glide.with(holder.itemView.getContext())
                 .load(community.getImageUrl())
-                .placeholder(R.drawable.logo)
                 .error(R.drawable.logo)
                 .circleCrop()
                 .into(holder.communityImage);
