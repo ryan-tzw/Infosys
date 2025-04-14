@@ -1,8 +1,14 @@
 package com.example.infosys.fragments.main;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.MenuProvider;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -40,19 +47,28 @@ import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.GeoPoint;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileFragment extends BaseFragment implements MenuProvider, ToolbarConfigurable {
     private static final String TAG = "ProfileFragment";
     private static final String ARG_USER_ID = "userId";
     UserPostsAdapter adapter;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ActivityResultLauncher<String[]> locationPermissionRequest;
     private ImageView profileImage;
+    private ImageView locationIcon;
+    private TextView displayLocation;
     private TextView txtName, txtAboutMe, txtFriendsCount, txtCommunitiesCount, noPostsText;
     private ConstraintLayout friendsCountLayout, communitiesCountLayout;
     private RecyclerView postsRecyclerView;
@@ -67,6 +83,8 @@ public class ProfileFragment extends BaseFragment implements MenuProvider, Toolb
             });
     private List<Post> postsList;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private FusedLocationProviderClient fusedLocationClient;
+
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -108,6 +126,12 @@ public class ProfileFragment extends BaseFragment implements MenuProvider, Toolb
             swipeRefreshLayout.setRefreshing(false);
         });
 
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation();
+        }
 
         return view;
     }
@@ -158,8 +182,16 @@ public class ProfileFragment extends BaseFragment implements MenuProvider, Toolb
         friendsCountLayout = view.findViewById(R.id.profile_friends_layout);
         communitiesCountLayout = view.findViewById(R.id.profile_communities_layout);
         postsRecyclerView = view.findViewById(R.id.profile_recycler_view);
+        displayLocation = view.findViewById(R.id.displayLocation);
+        locationIcon = view.findViewById(R.id.location_icon);
+
+        locationPermissionRequest = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::handleLocationPermissionResult);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         profileImage.setOnClickListener(v -> choosePicture());
+        locationIcon.setOnClickListener(v -> requestLocationPermission());
+
+
     }
 
     private void populateData() {
@@ -279,6 +311,111 @@ public class ProfileFragment extends BaseFragment implements MenuProvider, Toolb
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "getProfilePicture: Failed to get profile picture", e);
+                });
+    }
+
+    private void requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation();  // Proceed to get location if permission is already granted
+        } else {
+            locationPermissionRequest.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+    }
+
+    private void handleLocationPermissionResult(Map<String, Boolean> result) {
+        Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+        Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+
+        if (fineLocationGranted != null && fineLocationGranted) {
+            AndroidUtil.showToast(requireContext(), "Precise location access granted.");
+            getCurrentLocation();
+        } else if (coarseLocationGranted != null && coarseLocationGranted) {
+            AndroidUtil.showToast(requireContext(), "Approximate location access granted.");
+            getCurrentLocation();
+        } else {
+            AndroidUtil.showToast(requireContext(), "Location permission denied.");
+            showPermissionDeniedDialog();
+        }
+    }
+
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Location Permission Required")
+                .setMessage("This app needs location access to show your location. Please allow it in settings.")
+                .setPositiveButton("Go to Settings", (dialog, which) -> {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + requireContext().getPackageName()));
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    AndroidUtil.showToast(requireContext(), "Location access is required for full functionality.");
+                })
+                .show();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void getCurrentLocation() {
+        // Check permissions
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionRequest.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+            return;
+        }
+
+        // Fetch the current location
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(requireActivity(), location -> {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        String locationText = "Lat: " + latitude + ", Lng: " + longitude;
+
+                        // Reverse Geocoding to get a detailed address
+                        Geocoder geocoder = new Geocoder(requireContext());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            if (addresses != null && !addresses.isEmpty()) {
+                                Address address = addresses.get(0);
+
+                                // Get the most specific feature name (e.g., university, landmark)
+                                String featureName = address.getFeatureName(); // This may contain the name of a building or landmark
+                                String street = address.getThoroughfare(); // Street name
+                                String locality = address.getLocality(); // City name
+                                String subLocality = address.getSubLocality(); // More precise location inside the city
+                                String postalCode = address.getPostalCode(); // Postal Code
+
+                                // Construct a detailed location string
+                                String detailedLocation = featureName != null ? featureName : "";
+                                detailedLocation += street != null ? ", " + street : "";
+                                detailedLocation += subLocality != null ? ", " + subLocality : "";
+                                detailedLocation += locality != null ? ", " + locality : "";
+                                detailedLocation += postalCode != null ? ", " + postalCode : "";
+
+                                locationText = "Location: " + detailedLocation;
+                                GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+                                FirebaseUtil.updateUserField("location", geoPoint, requireContext());
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            locationText += "\nUnable to get exact place name.";
+                        }
+
+                        displayLocation.setText(locationText);
+                    } else {
+                        displayLocation.setText("Unable to retrieve location.");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    displayLocation.setText("Failed to get location.");
                 });
     }
 

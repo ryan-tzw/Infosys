@@ -22,6 +22,7 @@ public class User implements Serializable {
     private String fcmToken;
     private GeoPoint location;
     private boolean available;
+    private String quadrantId;
 
     public User() {
     }
@@ -93,6 +94,8 @@ public class User implements Serializable {
     public GeoPoint getLocation() {
         return location;
     }
+
+    public String getQuadrantId(){ return quadrantId; }
 
     public void setLocation(GeoPoint location) {
         this.location = location;

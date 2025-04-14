@@ -5,14 +5,4 @@
         <item name="android:color">@color/tertiaryColor</item>
     </style>
 
-    <style name="Theme.App.Splash" parent="Theme.SplashScreen">
-        <!-- Set the splash screen background color -->
-        <item name="windowSplashScreenBackground">@color/tertiaryColor</item>
-        <!-- Set the splash screen icon -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
-        <!--            &lt;!&ndash; Duration for the splash screen animation &ndash;&gt;-->
-        <!--            <item name="windowSplashScreenAnimationDuration">500</item>-->
-        <!-- Theme to apply after the splash screen -->
-        <item name="postSplashScreenTheme">@style/Theme.Infosys</item>
-    </style>
 </resources>
