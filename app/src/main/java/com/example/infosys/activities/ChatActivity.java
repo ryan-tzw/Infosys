@@ -43,7 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends StatusActivity {
     private static final String TAG = "ChatActivity";
     MaterialToolbar toolbar;
     EditText inputMessage;
