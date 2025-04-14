@@ -28,7 +28,7 @@ public abstract class BaseFragment extends Fragment implements ToolbarConfigurab
     @Override
     public void configureToolbar(MaterialToolbar toolbar) {
         if (MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).getBackStackEntryCount() == 0) {
-            toolbar.setNavigationIcon(R.drawable.ic_search);
+            toolbar.setNavigationIcon(null);
         }
     }
 

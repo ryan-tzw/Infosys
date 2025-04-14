@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.infosys.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,6 +22,13 @@ public class SplashActivity extends AppCompatActivity {
         setTheme(R.style.Theme_Infosys);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash);
+
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.dark_blue));
+
+
+        WindowInsetsControllerCompat insetsController =
+                new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        insetsController.setAppearanceLightStatusBars(false);  // Use true for dark icons on light bg
     }
 
     @Override

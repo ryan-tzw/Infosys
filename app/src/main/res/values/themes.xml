@@ -7,11 +7,9 @@
         <item name="colorSecondary">@color/secondaryColor</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!--        <item name="colorOutline">@color/lightGray</item>-->
-        <!--        <item name="colorOnSurface">@color/lightGray</item>-->
-        <!--        <item name="colorOnSecondaryContainer">@color/primaryColor</item>-->
-        <!--        <item name="colorSecondaryContainer">@color/tertiaryColor</item>-->
         <item name="android:windowSoftInputMode">adjustResize</item>
+
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
     <style name="Theme.Infosys" parent="Base.Theme.Infosys" />

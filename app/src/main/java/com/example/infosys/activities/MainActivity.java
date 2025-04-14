@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -18,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
@@ -69,6 +71,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.dark_blue));
+
+
+        WindowInsetsControllerCompat insetsController =
+                new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        insetsController.setAppearanceLightStatusBars(false);  // Use true for dark icons on light bg
+
+
+
         Log.d(TAG, "onCreate called");
 
         requestNotificationPermissionIfNeeded();
@@ -108,7 +120,13 @@ public class MainActivity extends AppCompatActivity {
         initialiseAppBar(topAppBar);
         initialiseFragments();
         handleIntent(getIntent());
+
+        // Initially hide the top app bar if the active fragment is Home
+        if (activeFragment == homeFragment) {
+            topAppBar.setVisibility(View.GONE);  // Hide the toolbar when Home is active
+        }
     }
+
 
 
     @Override
@@ -148,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "handleIntent: Navigating to newly created community with id: " + communityId);
 
                 bottomNavigationView.setSelectedItemId(R.id.nav_communities);
-                findViewById(R.id.bottom_navigation).setVisibility(BottomNavigationView.GONE);
+                findViewById(R.id.bottom_navigation).setVisibility(bottomNavigationView.GONE);
                 CommunityFragment fragment = CommunityFragment.newInstance(communityId);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container_view, fragment)
@@ -304,6 +322,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void switchFragment(Fragment targetFragment, int menuResId) {
         if (activeFragment != targetFragment) {
+            // Hide the toolbar for the home fragment
+            if (targetFragment == homeFragment || targetFragment == chatsFragment || targetFragment == notificationsFragment) {
+                topAppBar.setVisibility(View.GONE);  // Hide toolbar
+            } else {
+                topAppBar.setVisibility(View.VISIBLE);  // Show toolbar for other fragments
+            }
+
             getSupportFragmentManager().beginTransaction()
                     .hide(activeFragment)
                     .show(targetFragment)
@@ -313,6 +338,7 @@ public class MainActivity extends AppCompatActivity {
         }
         lastSelectedMenu = menuResId;
     }
+
 
     private void updateToolbarMenuForFragment(Fragment navFragment) {
         topAppBar.getMenu().clear();
@@ -371,7 +397,8 @@ public class MainActivity extends AppCompatActivity {
     public void navigateBackToCommunities() {
         // This already exists in your code
         switchFragment(communitiesFragment, R.menu.communities);
-        findViewById(R.id.bottom_navigation).setVisibility(BottomNavigationView.VISIBLE);
+        findViewById(R.id.bottom_navigation).setVisibility(bottomNavigationView.VISIBLE);
+
         // Clear any back stack entries related to community fragments
         FragmentManager fm = getSupportFragmentManager();
         if (fm.getBackStackEntryCount() > 0) {
