@@ -74,9 +74,6 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
 
         btnRegister.setOnClickListener(v -> register());
         loginTextView.setOnClickListener(v -> navigateToLogin());
-
-        AndroidUtil.setupPasswordToggle(edtPassword);
-        AndroidUtil.setupPasswordToggle(edtConfirmPassword);
     }
 
     private void navigateToLogin() {

@@ -82,17 +82,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/username_container">
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="password"
                 android:hint="@string/password"
                 android:inputType="textPassword"
-                android:drawableEnd="@drawable/ic_eye_closed"
-                android:drawablePadding="8dp"
-                android:padding="12dp"
-                android:maxLines="1"/>
-
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -104,18 +101,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/password_container">
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/password_confirm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="password"
                 android:hint="@string/confirm_password"
                 android:inputType="textPassword"
-                android:drawableEnd="@drawable/ic_eye_closed"
-                android:drawablePadding="8dp"
-                android:padding="12dp"
-                android:autofillHints="password"
-                android:maxLines="1"/>
-
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
