@@ -89,7 +89,7 @@ public class EditProfileActivity extends AppCompatActivity {
         // Progress indicator
         progressIndicator = findViewById(R.id.progress_indicator);
         // Delete account button
-//        deleteAccountButton = findViewById(R.id.delete_account_button);
+        deleteAccountButton = findViewById(R.id.delete_account_button);
     }
 
     private void setListeners() {

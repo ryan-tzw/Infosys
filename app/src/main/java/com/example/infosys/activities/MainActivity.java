@@ -43,7 +43,7 @@ import com.google.firebase.storage.StorageReference;
 import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends StatusActivity {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
