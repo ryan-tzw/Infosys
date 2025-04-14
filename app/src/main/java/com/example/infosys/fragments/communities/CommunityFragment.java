@@ -182,9 +182,28 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
 
                 // Post to ensure UI operations happen on the main thread
                 toolbar.post(() -> {
-                    // Check if fragment manager state is saved
-                    if (!activity.getSupportFragmentManager().isStateSaved()) {
-                        activity.navigateBackToCommunities();
+                    // Check where we came from
+                    boolean cameFromMainActivity = false;
+
+                    // Check the fragment back stack to determine the source
+                    FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                    if (fragmentManager.getBackStackEntryCount() > 0) {
+                        FragmentManager.BackStackEntry lastEntry = fragmentManager.getBackStackEntryAt(
+                                fragmentManager.getBackStackEntryCount() - 1
+                        );
+                        // If the backstack entry name does NOT contain "CreateCommunity", assume MainActivity
+                        cameFromMainActivity = lastEntry.getName() == null ||
+                                !lastEntry.getName().contains("CreateCommunity");
+                    }
+
+                    if (!fragmentManager.isStateSaved()) {
+                        if (cameFromMainActivity) {
+                            // Case: Came from MainActivity → Use if-statement logic
+                            activity.navigateBackToCommunities();
+                        } else {
+                            // Case: Came from elsewhere (e.g., CreateCommunityActivity) → Use else-statement logic
+                            MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).popBackStack();
+                        }
                     } else {
                         Log.e(TAG, "Cannot navigate back: FragmentManager state is already saved");
                     }
