@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.1"
+androidCaptchaUi = "v0.0.2"
 androidImagePicker = "3.0.0"
 circleindicator = "2.1.6"
 coreSplashscreen = "1.0.1"
@@ -28,6 +29,7 @@ recyclerviewSwipedecorator = "1.4"
 viewpager2 = "1.1.0"
 
 [libraries]
+android-captcha-ui = { module = "com.github.Jackwitwicky:android-captcha-ui", version.ref = "androidCaptchaUi" }
 android-image-picker = { module = "com.github.esafirm:android-image-picker", version.ref = "androidImagePicker" }
 circleindicator = { module = "me.relex:circleindicator", version.ref = "circleindicator" }
 core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }

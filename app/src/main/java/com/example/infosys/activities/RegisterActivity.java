@@ -1,5 +1,6 @@
 package com.example.infosys.activities;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -14,10 +15,12 @@ import com.example.infosys.interfaces.RegistrationNavCallback;
 import com.example.infosys.managers.RegisterManager;
 import com.example.infosys.utils.AndroidUtil;
 import com.google.android.material.textfield.TextInputLayout;
+import com.jacknkiarie.captchaui.CaptchaLayout;
+import com.jacknkiarie.captchaui.CaptchaUI;
 
 import java.util.Map;
 
-public class RegisterActivity extends AppCompatActivity implements RegistrationNavCallback {
+public class RegisterActivity extends AppCompatActivity implements RegistrationNavCallback, CaptchaLayout.OnButtonClickedListener {
     private static final String TAG = "RegisterActivity";
     private EditText edtEmail, edtUsername, edtPassword, edtConfirmPassword;
     private TextInputLayout tilEmail, tilUsername, tilPassword, tilConfirmPassword;
@@ -47,7 +50,19 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
 
         if (errors.isEmpty()) {
             btnRegister.setEnabled(false);
-            registerManager.registerUser(email, username, password, this, this);
+
+            new CaptchaUI.Builder(this)
+                    .setCaptchaTitle("Captcha Verification")
+                    .setCaptchaDescription("Please verify that you are not a robot.")
+                    .setCaptchaTextColor(Color.BLACK)
+                    .setCaptchaLineColor(Color.BLACK)
+                    .setCaptchaCodeLength(5)
+                    .setCaptchaPositiveText("Submit")
+                    .setCaptchaPositiveTextColor(Color.WHITE)
+                    .setCaptchaNegativeText("Cancel")
+                    .setCaptchaNegativeTextColor(Color.BLACK)
+                    .setCaptchaButtonListener(this)
+                    .build();
         }
     }
 
@@ -90,5 +105,19 @@ public class RegisterActivity extends AppCompatActivity implements RegistrationN
     @Override
     public void onRegistrationFailure(Exception e) {
         Log.e(TAG, "onRegistrationFailure: ", e);
+    }
+
+    @Override
+    public void onNegativeButtonClicked() {
+        AndroidUtil.showToast(getApplicationContext(), "Captcha failed. Please try again.");
+        btnRegister.setEnabled(true);
+    }
+
+    @Override
+    public void onVerificationCodeVerified() {
+        String email = edtEmail.getText().toString();
+        String username = edtUsername.getText().toString();
+        String password = edtPassword.getText().toString();
+        registerManager.registerUser(email, username, password, this, this);
     }
 }

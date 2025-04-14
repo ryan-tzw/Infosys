@@ -62,7 +62,9 @@ dependencies {
     implementation(libs.firebase.inappmessaging.display)
     implementation(libs.firebase.analytics)
     implementation(libs.okhttp)
-    implementation (libs.play.services.location)
-    implementation (libs.lottie)
+    implementation(libs.play.services.location)
+    implementation(libs.lottie)
     implementation(libs.lifecycle.process)
+    implementation(libs.android.captcha.ui)
+
 }
