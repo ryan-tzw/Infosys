@@ -70,8 +70,8 @@ public class CommunitiesManager {
     }
 
     public void getPopularCommunities(OnCommunitiesRetrieved callback) {
-        // Get top 3 communities in member count
-        db.collection(Collections.COMMUNITIES).orderBy("memberCount", Query.Direction.DESCENDING).limit(3).get()
+        // Get top 4 communities in member count
+        db.collection(Collections.COMMUNITIES).orderBy("memberCount", Query.Direction.DESCENDING).limit(4).get()
                 .addOnSuccessListener(documentSnapshots -> {
                     callback.onCommunitiesRetrieved(documentSnapshots.toObjects(Community.class));
                 })

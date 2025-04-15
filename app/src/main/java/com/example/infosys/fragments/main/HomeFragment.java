@@ -1,6 +1,7 @@
 package com.example.infosys.fragments.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,13 +21,12 @@ import androidx.recyclerview.widget.SnapHelper;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
 import com.example.infosys.R;
-import com.example.infosys.adapters.CommunityAdapter;
+import com.example.infosys.activities.MainActivity;
 import com.example.infosys.adapters.UserItemAdapter;
-import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.main.common.BaseFragment;
 import com.example.infosys.managers.CommunitiesManager;
-import com.example.infosys.managers.MainManager;
 import com.example.infosys.managers.UserManager;
 import com.example.infosys.model.Community;
 import com.example.infosys.model.GeoRect;
@@ -33,7 +34,6 @@ import com.example.infosys.model.Point;
 import com.example.infosys.model.QuadTree;
 import com.example.infosys.model.Quadrant;
 import com.example.infosys.model.User;
-import com.example.infosys.utils.AndroidUtil;
 import com.example.infosys.utils.FirebaseUtil;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.GeoPoint;
@@ -116,28 +116,57 @@ public class HomeFragment extends BaseFragment {
 
         setupSwipeToRefresh(view);
     }
-
+    
     private void setupPopularCommunities(View view) {
         CommunitiesManager communitiesManager = CommunitiesManager.getInstance();
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view_popular_communities);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        AndroidUtil.setupDivider(view, recyclerView);
+        // Find views by ID
+        ImageView[] imageViews = {
+                view.findViewById(R.id.image1),
+                view.findViewById(R.id.image2),
+                view.findViewById(R.id.image3),
+                view.findViewById(R.id.image4)
+        };
 
-        List<Community> popularCommunities = new ArrayList<>();
-        CommunityAdapter adapter = new CommunityAdapter(popularCommunities,
-                MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES));
-
-        // Enable the intent-based navigation
-        adapter.enableIntentNavigation(true);
-
-        recyclerView.setAdapter(adapter);
+        TextView[] textViews = {
+                view.findViewById(R.id.image1_text),
+                view.findViewById(R.id.image2_text),
+                view.findViewById(R.id.image3_text),
+                view.findViewById(R.id.image4_text)
+        };
 
         communitiesManager.getPopularCommunities(popularCommunitiesList -> {
-            Log.d(TAG, "setupPopularCommunities: Popular communities list retrieved: " + popularCommunitiesList);
-            popularCommunities.clear();
-            popularCommunities.addAll(popularCommunitiesList);
-            adapter.notifyDataSetChanged();
+            Log.d(TAG, "setupPopularCommunities: Popular communities retrieved: " + popularCommunitiesList);
+
+            for (int i = 0; i < 4; i++) {
+                if (i < popularCommunitiesList.size()) {
+                    Community community = popularCommunitiesList.get(i);
+                    ImageView imageView = imageViews[i];
+                    TextView textView = textViews[i];
+
+                    textView.setText(community.getName());
+
+                    Glide.with(view.getContext())
+                            .load(community.getImageUrl())
+                            .error(R.drawable.logo)
+                            .placeholder(R.drawable.logo)
+                            .circleCrop()
+                            .into(imageView);
+
+                    imageView.setOnClickListener(v -> {
+                        Intent intent = new Intent(requireContext(), MainActivity.class);
+                        intent.putExtra("newCommunity", true);
+                        intent.putExtra("communityId", community.getId());
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        requireContext().startActivity(intent);
+                    });
+
+                } else {
+                    // Hide unused slots
+                    imageViews[i].setVisibility(View.GONE);
+                    textViews[i].setVisibility(View.GONE);
+                }
+            }
         });
     }
 
