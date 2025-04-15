@@ -27,14 +27,18 @@ public class CommunitiesManager {
     }
 
     public void getUserCommunities(String userId, OnCommunitiesRetrieved callback) {
-        // Get communities that the user is a member of
         db.collection(Collections.USERS).document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     User user = documentSnapshot.toObject(User.class);
-                    assert user != null;
-                    List<String> communityIds = user.getCommunitiesList();
+                    if (user == null) {
+                        Log.e(TAG, "User not found: " + userId);
+                        callback.onCommunitiesRetrieved(null);
+                        return;
+                    }
 
-                    if (communityIds.isEmpty()) {
+                    List<String> communityIds = user.getCommunitiesList();
+                    if (communityIds == null || communityIds.isEmpty()) {
+                        Log.e(TAG, "No communities found for user: " + userId);
                         callback.onCommunitiesRetrieved(null);
                         return;
                     }
@@ -44,13 +48,16 @@ public class CommunitiesManager {
                                 callback.onCommunitiesRetrieved(documentSnapshots.toObjects(Community.class));
                             })
                             .addOnFailureListener(e -> {
-                                Log.e(TAG, "getUserCommunities: Error retrieving user's communities: ", e);
+                                Log.e(TAG, "Error retrieving user's communities: ", e);
+                                callback.onCommunitiesRetrieved(null);  // Optionally handle failure cases
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "getUserCommunities: Error retrieving user: ", e);
+                    Log.e(TAG, "Error retrieving user: ", e);
+                    callback.onCommunitiesRetrieved(null);  // Optionally handle failure cases
                 });
     }
+
 
     public void getAllCommunities(OnCommunitiesRetrieved callback) {
         db.collection(Collections.COMMUNITIES).get()
