@@ -83,9 +83,9 @@ public class AnimatedGradientBorderView extends View {
 
     private void updateGradient() {
         int[] colors = {
-                Color.parseColor("#01615e"),
-                Color.parseColor("#28bfbb"),
-                Color.parseColor("#a9f5f3")
+                Color.parseColor("#D16BA5"),
+                Color.parseColor("#86A8E7"),
+                Color.parseColor("#5FFBF1")
         };
 
         LinearGradient gradient = new LinearGradient(
