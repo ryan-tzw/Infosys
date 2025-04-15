@@ -160,10 +160,11 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
         if (menuItem.getItemId() == R.id.manage_button) {
             Log.d(TAG, "onMenuItemSelected: Manage users");
-            MainManager.getInstance().getNavFragmentManager(Nav.COMMUNITIES).beginTransaction()
-                    .replace(R.id.nav_container, ManageUsersFragment.newInstance(communityId))
+            assert getActivity() != null;
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container_view, ManageUsersFragment.newInstance(communityId))
                     .addToBackStack(null)
-                    .commit();
+                    .commitAllowingStateLoss();
             return true;
         }
         return false;
