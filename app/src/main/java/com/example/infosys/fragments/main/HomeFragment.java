@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide;
 import com.example.infosys.R;
 import com.example.infosys.activities.MainActivity;
 import com.example.infosys.adapters.UserItemAdapter;
+import com.example.infosys.animation.AnimatedGradientBorderView;
 import com.example.infosys.fragments.main.common.BaseFragment;
 import com.example.infosys.managers.CommunitiesManager;
 import com.example.infosys.managers.UserManager;
@@ -53,6 +54,7 @@ public class HomeFragment extends BaseFragment {
     private ViewPager2 communityViewPager;
     private LinearLayout dotIndicator;
     private Context context;
+    private AnimatedGradientBorderView animatedBorder1,animatedBorder2,animatedBorder3,animatedBorder4;
 
     public HomeFragment() {
     }
@@ -115,6 +117,16 @@ public class HomeFragment extends BaseFragment {
         getCurrentUserGeoPointAndFindNearbyUsers();
 
         setupSwipeToRefresh(view);
+
+        animatedBorder1 = view.findViewById(R.id.animatedBorder1);
+        animatedBorder2 = view.findViewById(R.id.animatedBorder2);
+        animatedBorder3 = view.findViewById(R.id.animatedBorder3);
+        animatedBorder4 = view.findViewById(R.id.animatedBorder4);
+        animatedBorder1.startAnimation();
+        animatedBorder2.startAnimation();
+        animatedBorder3.startAnimation();
+        animatedBorder4.startAnimation();
+
     }
     
     private void setupPopularCommunities(View view) {
@@ -295,6 +307,16 @@ public class HomeFragment extends BaseFragment {
 
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        animatedBorder1.stopAnimation();
+        animatedBorder2.stopAnimation();
+        animatedBorder3.stopAnimation();
+        animatedBorder4.stopAnimation();
+
     }
 
 }

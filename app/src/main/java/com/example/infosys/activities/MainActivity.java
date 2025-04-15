@@ -28,6 +28,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.infosys.R;
+import com.example.infosys.animation.AnimatedGradientBorderView;
 import com.example.infosys.enums.Nav;
 import com.example.infosys.fragments.communities.CommunityFragment;
 import com.example.infosys.fragments.main.common.NavFragment;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private Fragment homeFragment, communitiesFragment, notificationsFragment, chatsFragment, profileFragment, activeFragment;
     private BottomNavigationView bottomNavigationView;
     private MenuProvider currentMenuProvider;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
