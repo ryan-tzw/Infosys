@@ -71,30 +71,50 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        // Window and status bar setup
         getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.dark_blue));
-
-
-        WindowInsetsControllerCompat insetsController =
-                new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
-        insetsController.setAppearanceLightStatusBars(false);  // Use true for dark icons on light bg
-
-
+        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(
+                getWindow(), getWindow().getDecorView());
+        insetsController.setAppearanceLightStatusBars(false);
 
         Log.d(TAG, "onCreate called");
 
+        // Permission and manager setup
         requestNotificationPermissionIfNeeded();
-
         MainManager.getInstance().setMainActivity(this);
 
+        // Bottom navigation setup
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setItemIconTintList(null);
-        topAppBar = findViewById(R.id.app_bar);
 
+        // Toolbar setup (following the pattern from initialiseUI())
+        topAppBar = findViewById(R.id.app_bar);
+        setSupportActionBar(topAppBar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
+        View customView = getLayoutInflater().inflate(R.layout.home_toolbar_custom, topAppBar, false);
+        topAppBar.addView(customView);
         AndroidUtil.setToolbarPadding(topAppBar);
 
+        // Profile picture loading
+        loadProfilePicture();
+
+        // Fragment and navigation setup
+        overrideBackButton();
+        initialiseFragments();
+        handleIntent(getIntent());
+    }
+
+    private void loadProfilePicture() {
         Log.d(TAG, "onCreate: Retrieving and converting profile picture to drawable bitmap");
-        StorageReference profilePictureReference = FirebaseStorage.getInstance().getReference().child("profile_pictures/").child(Objects.requireNonNull(FirebaseUtil.getCurrentUserUid()));
+        StorageReference profilePictureReference = FirebaseStorage.getInstance()
+                .getReference()
+                .child("profile_pictures/")
+                .child(Objects.requireNonNull(FirebaseUtil.getCurrentUserUid()));
+
         profilePictureReference.getDownloadUrl()
                 .addOnSuccessListener(uri -> {
                     Glide.with(this)
@@ -103,9 +123,12 @@ public class MainActivity extends AppCompatActivity {
                             .placeholder(R.drawable.ic_profile_placeholder)
                             .into(new CustomTarget<Drawable>() {
                                 @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                public void onResourceReady(@NonNull Drawable resource,
+                                                            @Nullable Transition<? super Drawable> transition) {
                                     Log.d(TAG, "onResourceReady: Resource ready");
-                                    bottomNavigationView.getMenu().findItem(R.id.nav_profile).setIcon(resource);
+                                    bottomNavigationView.getMenu()
+                                            .findItem(R.id.nav_profile)
+                                            .setIcon(resource);
                                 }
 
                                 @Override
@@ -114,17 +137,6 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                 });
-
-        overrideBackButton();
-
-        initialiseAppBar(topAppBar);
-        initialiseFragments();
-        handleIntent(getIntent());
-
-        // Initially hide the top app bar if the active fragment is Home
-        if (activeFragment == homeFragment) {
-            topAppBar.setVisibility(View.GONE);  // Hide the toolbar when Home is active
-        }
     }
 
 
@@ -323,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
     private void switchFragment(Fragment targetFragment, int menuResId) {
         if (activeFragment != targetFragment) {
             // Hide the toolbar for the home fragment
-            if ((targetFragment == homeFragment || targetFragment == chatsFragment || targetFragment == notificationsFragment)){
+            if ((targetFragment == chatsFragment || targetFragment == notificationsFragment)){
                 topAppBar.setVisibility(View.GONE);  // Hide toolbar
             }else {
                 topAppBar.setVisibility(View.VISIBLE);  // Show toolbar for other fragments

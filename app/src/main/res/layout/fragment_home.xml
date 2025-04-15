@@ -6,9 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".fragments.main.ProfileFragment">
 
-    <!-- Include your custom toolbar here -->
-    <include layout="@layout/home_toolbar_custom" />
-
     <!-- Content scrolls below the toolbar -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
