@@ -51,10 +51,10 @@
                     android:id="@+id/community_members"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
                     android:text="@string/txt_members"
                     android:textSize="12sp"
                     android:layout_marginBottom="5dp"
+                    app:layout_constraintBottom_toTopOf="@+id/community_description"
                     app:layout_constraintStart_toStartOf="@id/community_name"
                     app:layout_constraintTop_toBottomOf="@id/community_name" />
 
