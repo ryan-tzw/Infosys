@@ -323,9 +323,9 @@ public class MainActivity extends AppCompatActivity {
     private void switchFragment(Fragment targetFragment, int menuResId) {
         if (activeFragment != targetFragment) {
             // Hide the toolbar for the home fragment
-            if (targetFragment == homeFragment || targetFragment == chatsFragment || targetFragment == notificationsFragment) {
+            if ((targetFragment == homeFragment || targetFragment == chatsFragment || targetFragment == notificationsFragment)){
                 topAppBar.setVisibility(View.GONE);  // Hide toolbar
-            } else {
+            }else {
                 topAppBar.setVisibility(View.VISIBLE);  // Show toolbar for other fragments
             }
 

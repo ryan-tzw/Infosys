@@ -186,6 +186,10 @@ public class CommunityFragment extends Fragment implements ToolbarConfigurable, 
             if (getActivity() instanceof MainActivity) {
                 MainActivity activity = (MainActivity) getActivity();
 
+                if (getActivity().getIntent() != null) {
+                    getActivity().getIntent().removeExtra("newCommunity");
+                }
+
                 // Post to ensure UI operations happen on the main thread
                 toolbar.post(activity::navigateBackToCommunities);
             }

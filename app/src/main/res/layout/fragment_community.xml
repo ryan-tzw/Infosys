@@ -54,7 +54,7 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/txt_members"
                     android:textSize="12sp"
-                    android:paddingBottom="5dp"
+                    android:layout_marginBottom="5dp"
                     app:layout_constraintStart_toStartOf="@id/community_name"
                     app:layout_constraintTop_toBottomOf="@id/community_name" />
 
